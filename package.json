@@ -1,0 +1,33 @@
+{
+  "name": "visualization-platform",
+  "version": "1.0.0",
+  "description": "visualization platform project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nonyo555/Visualization-Platform.git"
+  },
+  "keywords": [
+    "visualization",
+    "api",
+    "web",
+    "application"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nonyo555/Visualization-Platform/issues"
+  },
+  "homepage": "https://github.com/nonyo555/Visualization-Platform#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-fileupload": "^1.2.0",
+    "http": "0.0.1-security",
+    "socket.io": "^2.3.0"
+  }
+}
