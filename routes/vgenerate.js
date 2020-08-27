@@ -27,13 +27,9 @@ module.exports = function () {
         console.log(refId);
         //check refId in db
         //if there is a refId : get d3 html file
-        //const file = '{$filepath}';
-        res.sendFile(file, (err) => {
-            if(res.headersSent){
-                console.log('header sent');
-            } else {
-                res.status(404).send('No such file or directory for the requested file');
-            }
+        console.log(__dirname);
+        const file = '/chart_example.html';
+        res.sendFile(__dirname + file, (err) => {
         })
     })
 
