@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const scatter = require('../charts/scatter')
 
 module.exports = function () {
     router.get('/',(req, res) => {
@@ -17,6 +18,8 @@ module.exports = function () {
         var config = req.body;
         console.log(config);
 
+        var refId = scatter.generate(config);
+        console.log("id : " + refId);
         res.send(JSON.stringify(config));
 
         //generate d3 html file here, store in DB and return refId
