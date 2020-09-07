@@ -11,7 +11,7 @@ function generateRefId() {
     return result;
  }
 
-const generate = (config) => {
+const generate = async (config) => {
     if(config != null){
         console.log(config);
         var res = `<!-- Code from d3-graph-gallery.com -->
@@ -115,7 +115,7 @@ const generate = (config) => {
         
         </script>`;
         const refId = generateRefId();
-        fs.writeFile('generated/' + refId + '.html', res, (error) => {console.log(error)});
+        fs.writeFileSync('generated/' + refId + '.html', res, (error) => {console.log(error)});
         return refId;
     }
 }
