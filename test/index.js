@@ -19,7 +19,7 @@ app.get('/test.js', (req, res) => {
 })
 app.get('/vgenTest.js', (req, res) => {3
   var sunburst = Vgen.Vgen.createSunburst()
-  res.send(sunburst.generate())
+  res.send(sunburst.generateHTML())
 })
 app.listen(80, () => {
   //console.log(Vgen.Vgen.createSunburst().genConfig('del','abc',{'name2':'Aunaun'}))

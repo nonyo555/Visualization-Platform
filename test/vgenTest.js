@@ -1,5 +1,7 @@
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
+const zsunburst = require('./zoomablesunburst.js')
+
 function changeJsonKey(jsons,jconfig){
     var jsonstr = JSON.stringify(jsons)
     var keys = Object.keys(jconfig)
@@ -28,6 +30,7 @@ function checkJsonconfig(json){
     }
     return json
 }
+
 // all last Children and json which has a value key have a value is 1  
 function jsonSingleValue(json){
     var keys = Object.keys(json)
@@ -57,14 +60,14 @@ class Vgen{
     {
         return new Sunburst()
     }
-    
 }
+
 class Sunburst {
     constructor(){
     this.width = 800;
     this.height = 800;
-    this.title=  '{return d.data.name+`   `+String(d.value)}'
-    this.label = 'd.data.name'
+    this.title = function title (d){return d.data.name+`   `+String(d.value)}
+    this.label = function label (d){return d.data.name}
     this.json= {'name': 'root','children':[]}
     //example data 
     //change name to 'json' to test
@@ -467,33 +470,29 @@ class Sunburst {
     }
     setTitle(title){
         // write a function or  str to config title
+        // function must have a 'd' in parameter 
         // {d} d is a node and d.data is a json in that path
         // {d} d can get a d's parent and d's value by d.parent  and d.value
         // {d} d can get depth and height in Sunburst by d.depth and d.heigth 
-        if( typeof title === 'function'){
-            var funcstr = title.toString()
-            var index = funcstr.indexOf('{')
-            this.title = funcstr.slice(index)
-        }
-        else if (typeof title === 'string') {
-            var str = '`'
-            this.title = str.concat(title,'`')
+        if(typeof title == 'string' || typeof title =='function'){
+            this.title = title
         }
     }
-    setLabel(label){
+    getTitle(){
+        return this.title
+    }
+    setlabel(label){
         // write a function or  str to config title
+        // function must have a 'd' in parameter
         // {d} d is a node and d.data is a json in that path
         // {d} d can get a d's parent and d's value by d.parent  and d.value
         // {d} d can get depth and height in Sunburst by d.depth and d.heigth 
-        if( typeof label === 'function'){
-            var funcstr = label.toString()
-            var index = funcstr.indexOf('{')
-            this.label = funcstr.slice(index)
+        if(typeof label == 'string' || typeof label =='function'){
+            this.label = label
         }
-        else if (typeof label === 'string') {
-            var str = '`'
-            this.label = str.concat(label,'`')
-        }
+    }
+    getLabel(){
+        return this.label
     }
     genJson(mode,path='',json={},jconfig={}){
         if (typeof path == 'string' && typeof mode == 'string'){   
@@ -564,29 +563,38 @@ class Sunburst {
     getJson(){
         return this.json
     }
-    generate(singleValue = false){
+    generateHTML(singleValue = false){
         this.json = checkJsonconfig(this.json)
         if(singleValue == true){
         this.json = jsonSingleValue(this.json)
         }
+        if (typeof this.title == 'string'){
+            this.title = `'`+this.title+`'`
+        }
+        if (typeof this.label == 'string'){
+            this.label = `'`+this.label+`'`
+        }
         var dom = new JSDOM(`<head>
         <script src="https://d3js.org/d3.v5.js"></script>
-        <script type = 'text/javascript' src = "./zoomablesunburst.js" ></script>
         </head>
         <body>
         <svg width ='`+String(this.width)+`' height='`+ String(this.height)+`'></svg>
         <script>
         var data =`+JSON.stringify(this.json)+`
         var format = d3.format(",d")
-        chart()
-        d3.selectAll('title')
-            .text(d=>`+this.title+`)
-        d3.selectAll('text')
-            .text(d=> `+this.label+`)
+        `+ zsunburst.zoomableSunburst.toString()+`
+        zoomableSunburst(data,`+this.title.toString()+`,`+this.label.toString()+`)
         </script> 
         </body>
         `);
         return dom.serialize();
     }
+    // generateElement(id,singleValue = false){
+    //     this.json = checkJsonconfig(this.json)
+    //     if(singleValue == true){
+    //     this.json = jsonSingleValue(this.json)
+    //     }
+    //     document.getElementById(id).append(zsunburst.zoomableSunburst(this.json,this.title,this.label))
+    // }
 }
 module.exports = {Vgen}

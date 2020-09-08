@@ -1,8 +1,6 @@
 
-
-function chart(){
+function zoomableSunburst(data,title,pathlabel){
   color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, data.children.length + 1))
-  
   var width = 932
   var radius = width / 6
   partition = data => {
@@ -24,6 +22,7 @@ function chart(){
   const root = partition(data);
 
     root.each(d => d.current = d);
+      
 
     // const doc = new JSDOM('<svg></svg>')
     // const svg = d3.select(doc.window.document.querySelector("svg"))
@@ -52,6 +51,7 @@ function chart(){
         .on("click", clicked);
     
     path.append("title")
+              .text(title)
 
 
     const label = g.append("g")
@@ -64,7 +64,7 @@ function chart(){
         .attr("dy", "0.35em")
         .attr("fill-opacity", d => +labelVisible(d.current))
         .attr("transform", d => labelTransform(d.current))
-        .text(d => d.data.name);
+        .text(pathlabel);
   
     const parent = g.append("circle")
         .datum(root)
@@ -121,6 +121,6 @@ function chart(){
       return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
     }
    //console.log(svg.node())
-   //return doc.serialize()
+   return svg.node()
   }
-// module.exports = {chart}
+module.exports = {zoomableSunburst}
