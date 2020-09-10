@@ -14,6 +14,10 @@ app.get('/zoomablesunburst.js', (req, res) => {
   //console.log(test.chart().style)
 })
 // //console.log(test.a());
+app.get('/bar.js', (req, res) => {
+  res.sendFile(path.join(__dirname + '/bar.js'));
+})
+
 app.get('/test.js', (req, res) => {
   res.sendFile(path.join(__dirname + '/test.js'));
 })
