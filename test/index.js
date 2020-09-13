@@ -18,12 +18,19 @@ app.get('/bar.js', (req, res) => {
   res.sendFile(path.join(__dirname + '/bar.js'));
 })
 
+app.get('/thai', (req, res) => {
+  res.sendFile(path.join(__dirname + '/thailandPolygon.js'));
+})
 app.get('/test.js', (req, res) => {
   res.sendFile(path.join(__dirname + '/test.js'));
 })
 app.get('/vgenTest.js', (req, res) => {3
   var sunburst = Vgen.Vgen.createSunburst()
   res.send(sunburst.generateHTML())
+})
+app.get('/thailand.json', (req, res) => {
+  console.log('lol')
+  res.sendFile(path.join(__dirname + '/thailand.json'));
 })
 app.listen(80, () => {
   //console.log(Vgen.Vgen.createSunburst().genConfig('del','abc',{'name2':'Aunaun'}))
