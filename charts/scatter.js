@@ -1,12 +1,37 @@
 var fs = require('fs');
+const db = require("../models");
+const file = db.file;
 
-//dont forget to check with db (cant be ซ้ำ)
-function generateRefId() {
+//check refId if already in db
+async function isRefIdUnique (refId) {
+  try{
+    return file.count({
+      where : {refId : refId}
+  }).then((count) => {
+    console.log("count = " + count)
+      if(count!=0){ 
+          return false;
+      }
+      return true;
+  })
+  } catch (err){
+    console.log(err);
+  }
+}
+
+async function generateRefId() {
     var result           = '';
     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     var charactersLength = characters.length;
     for ( var i = 0; i < 10; i++ ) { //10 digit id
        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    
+    while(! (await isRefIdUnique(result))){
+      result = '';
+      for ( var i = 0; i < 10; i++ ) { //10 digit id
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+     }
     }
     return result;
  }
@@ -114,7 +139,7 @@ const generate = async (config) => {
         })
         
         </script>`;
-        const refId = generateRefId();
+        const refId = await generateRefId();
         fs.writeFileSync('generated/' + refId + '.html', res, (error) => {console.log(error)});
         return refId;
     }

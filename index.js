@@ -12,10 +12,10 @@ const vgenerate = require('./routes/vgenerate')(io);
 
 global.__basedir = __dirname;
 
-//db.sequelize.sync()
- db.sequelize.sync({ force: true }).then(() => {
+db.sequelize.sync()
+ /*db.sequelize.sync({ force: true }).then(() => {
    console.log("Drop and re-sync db.");
- });
+ });*/
 
 app.use(fileUpload({
     createParentPath: true
