@@ -14,15 +14,28 @@ app.get('/zoomablesunburst.js', (req, res) => {
   //console.log(test.chart().style)
 })
 // //console.log(test.a());
-app.get('/bar.js', (req, res) => {
-  res.sendFile(path.join(__dirname + '/bar.js'));
+app.get('/thaiPolygon', (req, res) => {
+  var thaipoly = Vgen.Vgen.createThaiPolygon()
+  var JsonList=[
+    {pro:'Nan',label:'Hello',data:123},
+    {pro:'Nan',label:'Hello',data:153},
+    {pro:'Nan',label:'Hello',data:143},
+    {pro:'Bueng Kan',label:'Hello',data:233},
+    {pro:'Bueng Kan',label:'Hello',data:523},
+    {pro:'Bueng Kan',label:'Hello',data:323},
+    {pro:'Bangkok',label:'Hello',data:173},
+    {pro:'Bangkok',label:'Hello',data:193},
+    {pro:'Bangkok',label:'Hello',data:133}
+  ];
+  thaipoly.setJsontoJsonDataset(JsonList,'pro','label','data')
+  res.send(thaipoly.generateHTML())
 })
 
 app.get('/thai', (req, res) => {
   res.sendFile(path.join(__dirname + '/thailandPolygon.js'));
 })
-app.get('/test.js', (req, res) => {
-  res.sendFile(path.join(__dirname + '/test.js'));
+app.get('/test', (req, res) => {
+  res.sendFile(path.join(__dirname + '/testPerformance.html'));
 })
 app.get('/vgenTest.js', (req, res) => {
   var sunburst = Vgen.Vgen.createSunburst()
