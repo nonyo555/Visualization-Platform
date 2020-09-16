@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const uploadController = require("../controller/upload");
 const downloadController = require("../controller/download");
-const scatter = require('../charts/scatter')
+const vgenService = require('../services/vgenService');
+const scatter = require('../charts/scatter');
+var fs = require('fs');
 
 module.exports = function () {
     router.get('/', (req, res) => {
@@ -12,26 +14,66 @@ module.exports = function () {
     })
 
     router.post('/:vname', (req, res) => {
-        const vnameList = []; //add vname list here
+        const vnameList = ['scatter', 'thaipolygon', 'zoomablesunburst']; //add vname list here
         //if vname in vnameList : continue
         //else : return (400) bad request
         var vname = req.params.vname;
-        console.log(vname);
-        var config = req.body;
-        console.log(config);
+        var config = JSON.parse(req.body.config);
+        var data = JSON.parse(req.body.data);
+        console.log('vname : ', vname);
+        console.log('config : ', config);
+        console.log('data : ', data);
+        if (vnameList.indexOf(vname) >= 0) {
+            var visualization = vgenService.Vgen.createThaiPolygon();
+            visualization.setJsontoJsonDataset(data, 'pro', 'label', 'data');
+            var html = visualization.generateHTML();
+            vgenService.generateRefId().then((refId) => {
+                fs.writeFileSync('generated/' + refId + '.html', html, (error) => { console.log(error) });
+                console.log("refId : " + refId);
+                try {
+                    uploadController.uploadFiles(refId).then(() => {
+                        res.send(refId);
+                    })
+                } catch (err) {
+                    console.log(err);
+                }
+            })
+        }
+        else {
+            res.status(400).send('Error : Bad Request')
+        }
 
-        scatter.generate(config).then((refId) => {
-            console.log("id : " + refId);
-            try {
-                uploadController.uploadFiles(refId).then(() => {
-                    res.send(refId);
+
+        /*
+                scatter.generate(config).then((refId) => {
+                    console.log("id : " + refId);
+                    try {
+                        uploadController.uploadFiles(refId).then(() => {
+                            res.send(refId);
+                        })
+                    } catch (err) {
+                        console.log(err);
+                    }
                 })
-            } catch (err) {
-                console.log(err);
-            }
-        })
-
-
+        
+                app.get('/thaiPolygon', (req, res) => {
+                    var thaipoly = Vgen.Vgen.createThaiPolygon()
+                    var JsonList=[
+                      {pro:'Nan',label:'Hello',data:123},
+                      {pro:'Nan',label:'Hello',data:153},
+                      {pro:'Nan',label:'Hello',data:143},
+                      {pro:'Bueng Kan',label:'Hello',data:233},
+                      {pro:'Bueng Kan',label:'Hello',data:523},
+                      {pro:'Bueng Kan',label:'Hello',data:323},
+                      {pro:'Bangkok',label:'Hello',data:173},
+                      {pro:'Bangkok',label:'Hello',data:193},
+                      {pro:'Bangkok',label:'Hello',data:133}
+                    ];
+                    thaipoly.setJsontoJsonDataset(JsonList,'pro','label','data')
+                    res.send(thaipoly.generateHTML())
+                  })
+                  
+        */
 
         //generate d3 html file here, store in DB and return refId
     })

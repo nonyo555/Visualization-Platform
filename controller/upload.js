@@ -9,7 +9,7 @@ const uploadFiles = async (refId) => {
         const path = __basedir + "\\generated\\" + filename;
         console.log(path);
 
-        var text = await fs.readFileSync(__basedir + "\\generated\\" + filename)
+        //var text = await fs.readFileSync(__basedir + "\\generated\\" + filename)
         //console.log (text.toString('hex'))
 
         if (fs.existsSync(path)) {
