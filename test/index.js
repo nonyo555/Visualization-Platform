@@ -24,7 +24,7 @@ app.get('/thai', (req, res) => {
 app.get('/test.js', (req, res) => {
   res.sendFile(path.join(__dirname + '/test.js'));
 })
-app.get('/vgenTest.js', (req, res) => {3
+app.get('/vgenTest.js', (req, res) => {
   var sunburst = Vgen.Vgen.createSunburst()
   res.send(sunburst.generateHTML())
 })

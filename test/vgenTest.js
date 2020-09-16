@@ -52,7 +52,9 @@ function jsonSingleValue(json){
     return json
 }
 class Vgen{
-    graphs = [1,2,3,4,5] 
+    constructor() {
+        this.graphs = [1,2,3,4,5] 
+    }
     static getGrap(){
         return graphs
     }
