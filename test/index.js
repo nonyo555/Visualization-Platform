@@ -1,4 +1,3 @@
-
 const express = require('express')
 const path = require('path')
 //const test = require('./zoomablesunburst.js')
@@ -12,6 +11,23 @@ app.get('/zoomablesunburst.js', (req, res) => {
   res.sendFile(path.join(__dirname + '/zoomablesunburst.js'));
   //res.send(test.chart())
   //console.log(test.chart().style)
+})
+app.get('/linepie', (req, res) => {
+  var linepie = Vgen.Vgen.createLinepie()
+  var JsonList=[
+    {pro:'Nan',label:'Hello1',data:123},
+    {pro:'Nan',label:'Hello2',data:153},
+    {pro:'Nan',label:'Hello3',data:143},
+    {pro:'Bueng Kan',label:'Hello1',data:233},
+    {pro:'Bueng Kan',label:'Hello2',data:523},
+    {pro:'Bueng Kan',label:'Hello3',data:323},
+    {pro:'Bangkok',label:'Hello1',data:173},
+    {pro:'Bangkok',label:'Hello2',data:193},
+    {pro:'Bangkok',label:'Hello3',data:133}
+  ];
+  linepie.setJsontoJsonDataset(JsonList,'label','data')
+  linepie.generateHTML();
+  res.send(linepie.generateHTML(true))
 })
 // //console.log(test.a());
 app.get('/thaiPolygon', (req, res) => {
@@ -30,6 +46,8 @@ app.get('/thaiPolygon', (req, res) => {
   thaipoly.setJsontoJsonDataset(JsonList,'pro','label','data')
   res.send(thaipoly.generateHTML())
 })
+
+
 
 app.get('/thai', (req, res) => {
   res.sendFile(path.join(__dirname + '/thailandPolygon.js'));

@@ -54,4 +54,7 @@ const path = g.append("g")
 function barChart(){
     return svg.node()
 }
-console.log()
+   
+   
+   
+   
