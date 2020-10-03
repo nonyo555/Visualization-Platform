@@ -14,9 +14,7 @@ module.exports = function () {
     })
 
     router.post('/:vname', (req, res) => {
-        const vnameList = ['scatter', 'thaipolygon', 'zoomablesunburst']; //add vname list here
-        //if vname in vnameList : continue
-        //else : return (400) bad request
+        const vnameList = ['scatter', 'thaiPolygon', 'zoomablesunburst','barChart']; //add vname list here
         var vname = req.params.vname;
         var config = JSON.parse(req.body.config);
         var data = JSON.parse(req.body.data);
@@ -24,8 +22,15 @@ module.exports = function () {
         console.log('config : ', config);
         console.log('data : ', data);
         if (vnameList.indexOf(vname) >= 0) {
-            var visualization = vgenService.Vgen.createThaiPolygon();
-            visualization.setJsontoJsonDataset(data, 'pro', 'label', 'data');
+            if(vname=="thaiPolygon"){
+                var visualization = vgenService.Vgen.createThaiPolygon();
+                visualization.setJsontoJsonDataset(data, 'pro', 'label', 'data');
+            }
+            else if(vname == "barChart"){
+                var visualization = vgenService.Vgen.createBarChart();
+                visualization.setData(data);
+            }
+           
             var html = visualization.generateHTML();
             vgenService.generateRefId().then((refId) => {
                 fs.writeFileSync('generated/' + refId + '.html', html, (error) => { console.log(error) });

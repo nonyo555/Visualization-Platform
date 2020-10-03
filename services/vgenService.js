@@ -1,5 +1,6 @@
 const sunburst = require('../charts/ZoomableSunburst/classSunburst')
 const polygon = require('../charts/ThaiPolygon/classThaiPolygon')
+const barChart = require('../charts/barChart/classBarChart')
 const uploadController = require("../controller/upload");
 const db = require("../models");
 const file = db.file;
@@ -50,6 +51,9 @@ class Vgen {
   }
   static createThaiPolygon() {
     return new polygon.ThaiPolygon();
+  }
+  static createBarChart(){
+    return new barChart.BarChart();
   }
 }
 
