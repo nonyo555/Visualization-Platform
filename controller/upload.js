@@ -1,7 +1,7 @@
 const fs = require("fs");
 
-const db = require("../models");
-const file = db.file;
+const filedb = require("../models/file.db");
+const file = filedb.file;
 
 const uploadFiles = async (refId) => {
     try {

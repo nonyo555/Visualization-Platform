@@ -2,24 +2,15 @@ const sunburst = require('../charts/ZoomableSunburst/classSunburst')
 const polygon = require('../charts/ThaiPolygon/classThaiPolygon')
 const barChart = require('../charts/barChart/classBarChart')
 const uploadController = require("../controller/upload");
-const db = require("../models");
-const file = db.file;
+const filedb = require("../models/file.db");
+const file = filedb.file;
 
 //check refId if already in db
 async function isRefIdUnique(refId) {
-  try {
-    return file.count({
-      where: { refId: refId }
-    }).then((count) => {
-      console.log("count = " + count)
-      if (count != 0) {
-        return false;
-      }
-      return true;
-    })
-  } catch (err) {
-    console.log(err);
+  if(await file.findOne({where: { refId: refId }})){
+    return false;
   }
+  return true;
 }
 
 async function generateRefId() {
