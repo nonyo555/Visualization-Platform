@@ -2,7 +2,7 @@ const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const zsunburst = require('./zoomablesunburst.js')
 const thai = require('./thailandPolygon.js');
-
+const fs = require('fs');
 function changeJsonKey(jsons,jconfig){
     var jsonstr = JSON.stringify(jsons)
     var keys = Object.keys(jconfig)
@@ -55,6 +55,13 @@ function jsonSingleValue(json){
 class Vgen{
     constructor() {
         this.graphs = [1,2,3,4,5] 
+        // var data = fs.readFileSync('test/path.json','utf8')
+        // var ajson =JSON.parse(data)
+        // this.graphobject= {}
+        // this.graphs =  Object.keys(ajson)
+        // this.graphs.forEach(graphName=>{
+        //     this.graphobject[graphName] = require(ajson[graphName]).classObject()
+        // })
     }
     static getGrap(){
         return graphs
@@ -72,6 +79,12 @@ class Vgen{
         return new LinePie()
     }
 }
+
+
+
+
+
+
 
 class Sunburst {
     constructor(){

@@ -1,6 +1,5 @@
 const express = require('express')
 const path = require('path')
-//const test = require('./zoomablesunburst.js')
 const app = express()
 const Vgen = require('./vgenTest.js')
 
@@ -36,6 +35,9 @@ app.get('/thaiPolygon', (req, res) => {
     {pro:'Nan',label:'Hello',data:123},
     {pro:'Nan',label:'Hello',data:153},
     {pro:'Nan',label:'Hello',data:143},
+    {pro:'Nan',label:'Hello2',data:123},
+    {pro:'Nan',label:'Hello2',data:153},
+    {pro:'Nan',label:'Hello2',data:143},
     {pro:'Bueng Kan',label:'Hello',data:233},
     {pro:'Bueng Kan',label:'Hello',data:523},
     {pro:'Bueng Kan',label:'Hello',data:323},

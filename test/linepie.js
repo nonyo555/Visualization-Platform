@@ -123,7 +123,18 @@ function render(){
         })
         .text(d=>{
           if(d.value !=0){
-          return d.value}});
+            if(percenMode ==true){
+              var sum =0
+              var keys = Object.keys(piedataset)
+              keys.forEach(key =>{
+                sum += piedataset[key]
+              })
+              var  percen = (d.value/sum)*100
+              return String(percen.toFixed(2))+'%'
+            }
+          return d.value
+        }}
+          );
   svg.selectAll("whatever")
     .data(data_ready2).exit().remove();
   parentCH = -1
