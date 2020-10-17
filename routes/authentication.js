@@ -8,11 +8,11 @@ const authService = require('../services/authService');
 module.exports = function () {
     router.post('/authenticate', authenticateSchema, authenticate);
     router.post('/register', registerSchema, register);
-    router.get('/', authorize(), getAll);
-    router.get('/current', authorize(), getCurrent);
-    router.get('/:id', authorize(), getById);
-    router.put('/:id', authorize(), updateSchema, update);
-    router.delete('/:id', authorize(), _delete);
+    router.get('/', authorize.adminAuthorize(), getAll);
+    router.get('/current', authorize.adminAuthorize(), getCurrent);
+    router.get('/:id', authorize.adminAuthorize(), getById);
+    router.put('/:id', authorize.adminAuthorize(), updateSchema, update);
+    router.delete('/:id', authorize.adminAuthorize(), _delete);
 
     return router;
 };
@@ -36,7 +36,8 @@ function registerSchema(req, res, next) {
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
         username: Joi.string().required(),
-        password: Joi.string().min(6).required()
+        password: Joi.string().min(6).required(),
+        role: Joi.string()
     });
     validateRequest(req, next, schema);
 }
