@@ -1,10 +1,8 @@
-const sunburst = require('../charts/ZoomableSunburst/classSunburst')
-const polygon = require('../charts/ThaiPolygon/classThaiPolygon')
-const barChart = require('../charts/barChart/classBarChart')
 const uploadController = require("../controller/upload");
 const filedb = require("../models/file.db");
 const file = filedb.file;
-
+const templatedb = require("../models/template.db");
+const template = templatedb.template;
 //check refId if already in db
 async function isRefIdUnique(refId) {
   if(await file.findOne({where: { refId: refId }})){
@@ -12,7 +10,6 @@ async function isRefIdUnique(refId) {
   }
   return true;
 }
-
 async function generateRefId() {
   var result = '';
   var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -30,22 +27,18 @@ async function generateRefId() {
   return result;
 }
 
-class Vgen {
-  constructor() {
-    this.graphs = [1, 2, 3, 4, 5]
-  }
-  static getGrap() {
-    return graphs
-  }
-  static createSunburst() {
-    return new sunburst.Sunburst();
-  }
-  static createThaiPolygon() {
-    return new polygon.ThaiPolygon();
-  }
-  static createBarChart(){
-    return new barChart.BarChart();
-  }
+async function Vgen(templateName){
+    var result = await template.findOne({
+        where : {
+            'TemplateName' : templateName
+        }
+    })
+    if (result != null){
+      var objectClass = require(result.Path).object
+      return objectClass
+      }
+      else{
+          throw 'Not know this templateName'
+      }
 }
-
 module.exports = { Vgen, generateRefId }
