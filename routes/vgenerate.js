@@ -4,6 +4,7 @@ const uploadController = require("../controller/upload");
 const downloadController = require("../controller/download");
 const vgenService = require('../services/vgenService');
 const scatter = require('../charts/scatter');
+const authorize = require('../middleware/authorize')
 var fs = require('fs');
 
 module.exports = function () {
@@ -13,7 +14,7 @@ module.exports = function () {
         })
     })
 
-    router.post('/:vname', (req, res) => {
+    router.post('/:vname', authorize.authorize(), (req, res) => {
         const vnameList = ['scatter', 'thaiPolygon', 'zoomablesunburst','barChart']; //add vname list here
         var vname = req.params.vname;
         var config = JSON.parse(req.body.config);
@@ -35,8 +36,9 @@ module.exports = function () {
             vgenService.generateRefId().then((refId) => {
                 fs.writeFileSync('generated/' + refId + '.html', html, (error) => { console.log(error) });
                 console.log("refId : " + refId);
+                console.log(req.user);
                 try {
-                    uploadController.uploadFiles(refId).then(() => {
+                    uploadController.uploadFiles(refId,req.user.username).then(() => {
                         res.send(refId);
                     })
                 } catch (err) {
@@ -45,7 +47,7 @@ module.exports = function () {
             })
         }
         else {
-            res.status(400).send('Error : Bad Request')
+            res.status(400).json({ message : 'Error : Bad Request'})
         }
 
 
@@ -79,21 +81,22 @@ module.exports = function () {
                   })
                   
         */
-
-        //generate d3 html file here, store in DB and return refId
     })
 
-    router.get('/d3/:refId', (req, res) => {
+    router.get('/d3/:refId', authorize.authorize(), (req, res) => {
         var refId = req.params.refId;
+        const username = req.user.username;
+
         console.log(refId);
-        //check refId in db
-        //if there is a refId : get d3 html file
-        downloadController.downloadFiles(refId).then((resfile) => {
-            console.log(resfile.data)
-            res.send(resfile.data.toString('utf8'))
+        console.log(username);
+        
+        downloadController.downloadFiles(refId, username).then((resfile) => {
+            if(resfile)
+                res.send(resfile.data.toString('utf8'))
+            else res.status(401).json({ message: 'Unauthorized' });
         }).catch((err) => {
             console.log(err);
-            res.status(404).send("Error : There is no requested refId in database");
+            res.status(404).json({ message: 'Not Found'});
         })
     })
 

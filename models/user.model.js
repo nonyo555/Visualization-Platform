@@ -3,7 +3,8 @@ module.exports = (sequelize, DataTypes) => {
         firstName: { type: DataTypes.STRING, allowNull: false },
         lastName: { type: DataTypes.STRING, allowNull: false },
         username: { type: DataTypes.STRING, allowNull: false },
-        hash: { type: DataTypes.STRING, allowNull: false }
+        hash: { type: DataTypes.STRING, allowNull: false },
+        role: {type: DataTypes.STRING, allowNull: false, defaultValue: 'user'}
     };
 
     const options = {

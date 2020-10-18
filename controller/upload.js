@@ -3,7 +3,7 @@ const fs = require("fs");
 const filedb = require("../models/file.db");
 const file = filedb.file;
 
-const uploadFiles = async (refId) => {
+const uploadFiles = async (refId, username) => {
     try {
         const filename = refId + ".html";
         const path = __basedir + "\\generated\\" + filename;
@@ -16,9 +16,8 @@ const uploadFiles = async (refId) => {
             console.log("file exist");
             file.create({
                 refId: refId,
-                data: fs.readFileSync(
-                    path
-                ),
+                data: fs.readFileSync(path),
+                username: username
             }).then((file) => {
                 fs.writeFileSync(
                     __basedir + "\\resource\\tmp\\" + file.refId + ".html",
