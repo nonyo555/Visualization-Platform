@@ -157,5 +157,5 @@ class ThaiPolygon{
         return dom.serialize()
     }
 }
-
-module.exports = {ThaiPolygon}
+var object = new ThaiPolygon();
+module.exports = {object}

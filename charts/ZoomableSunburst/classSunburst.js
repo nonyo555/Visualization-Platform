@@ -580,4 +580,5 @@ class Sunburst {
         return dom.serialize();
     }
 }
-module.exports = {Sunburst}
+var object = new Sunburst()
+module.exports = {object}
