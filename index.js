@@ -9,6 +9,7 @@ const io = require('socket.io')(server);
 
 const filedb = require('./models/file.db')
 const userdb = require('./models/user.db')
+const templatedb = require('./models/template.db')
 
 const authentication = require('./routes/authentication')(io);
 const vgenerate = require('./routes/vgenerate')(io);
@@ -17,6 +18,7 @@ global.__basedir = __dirname;
 
 filedb.sequelize.sync()
 userdb.sequelize.sync()
+templatedb.sequelize.sync()
  /*db.sequelize.sync({ force: true }).then(() => {
    console.log("Drop and re-sync db.");
  });*/
