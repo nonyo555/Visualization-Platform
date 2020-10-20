@@ -1,18 +1,19 @@
 ﻿﻿const express = require('express');
 const router = express.Router();
 const Joi = require('joi');
-const validateRequest = require('../middleware/validate-request');
-const authorize = require('../middleware/authorize')
+const validateRequest = require('../helper/validate-request');
+const authorize = require('../helper/authorize')
 const authService = require('../services/authService');
+const Role = require('../helper/role')
 
 module.exports = function () {
     router.post('/authenticate', authenticateSchema, authenticate);
     router.post('/register', registerSchema, register);
-    router.get('/', authorize.adminAuthorize(), getAll);
-    router.get('/current', authorize.adminAuthorize(), getCurrent);
-    router.get('/:id', authorize.adminAuthorize(), getById);
-    router.put('/:id', authorize.adminAuthorize(), updateSchema, update);
-    router.delete('/:id', authorize.adminAuthorize(), _delete);
+    router.get('/', authorize(Role.admin), getAll);
+    router.get('/current',  authorize(), getCurrent);
+    router.get('/:id',  authorize(Role.admin), getById);
+    router.put('/:id',  authorize(Role.admin), updateSchema, update);
+    router.delete('/:id',  authorize(Role.admin), _delete);
 
     return router;
 };
@@ -37,7 +38,7 @@ function registerSchema(req, res, next) {
         lastName: Joi.string().required(),
         username: Joi.string().required(),
         password: Joi.string().min(6).required(),
-        role: Joi.string()
+        role: Joi.string().valid('user','admin','designer')
     });
     validateRequest(req, next, schema);
 }

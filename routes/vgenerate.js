@@ -4,7 +4,7 @@ const uploadController = require("../controller/upload");
 const downloadController = require("../controller/download");
 const vgenService = require('../services/vgenService');
 const scatter = require('../charts/scatter');
-const authorize = require('../middleware/authorize')
+const authorize = require('../helper/authorize')
 var fs = require('fs');
 
 module.exports = function () {
@@ -14,7 +14,7 @@ module.exports = function () {
         })
     })
 
-    router.post('/:vname', authorize.authorize(), (req, res) => {
+    router.post('/:vname', authorize(), (req, res) => {
         const vnameList = ['scatter', 'thaiPolygon', 'zoomablesunburst','barChart']; //add vname list here
         var vname = req.params.vname;
         var config = JSON.parse(req.body.config);
@@ -83,7 +83,7 @@ module.exports = function () {
         */
     })
 
-    router.get('/d3/:refId', authorize.authorize(), (req, res) => {
+    router.get('/d3/:refId', authorize(), (req, res) => {
         var refId = req.params.refId;
         const username = req.user.username;
 

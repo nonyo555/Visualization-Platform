@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes) => {
         lastName: { type: DataTypes.STRING, allowNull: false },
         username: { type: DataTypes.STRING, allowNull: false },
         hash: { type: DataTypes.STRING, allowNull: false },
-        role: {type: DataTypes.STRING, allowNull: false, defaultValue: 'user'}
+        role: {type: DataTypes.ENUM('user','admin','designer'), allowNull: false, defaultValue: 'user'}
     };
 
     const options = {

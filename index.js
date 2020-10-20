@@ -11,7 +11,6 @@ const filedb = require('./models/file.db')
 const userdb = require('./models/user.db')
 
 const authentication = require('./routes/authentication')(io);
-const accountManager = require('./routes/accountManager')(io);
 const vgenerate = require('./routes/vgenerate')(io);
 
 global.__basedir = __dirname;
@@ -29,7 +28,6 @@ app.use(cors())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use('/api/authentication', authentication);
-app.use('/api/accountManager', accountManager);
 app.use('/api/vgenerate', vgenerate);
 
 app.get('/', (req, res) => {
