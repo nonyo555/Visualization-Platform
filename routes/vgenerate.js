@@ -7,6 +7,8 @@ const scatter = require('../charts/scatter');
 const authorize = require('../helper/authorize')
 var fs = require('fs');
 
+
+
 module.exports = function () {
     router.get('/', (req, res) => {
         res.status(200).send({

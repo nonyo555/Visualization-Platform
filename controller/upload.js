@@ -8,7 +8,6 @@ const uploadFiles = async (refId, username) => {
         const filename = refId + ".html";
         const path = __basedir + "\\generated\\" + filename;
         console.log(path);
-
         //var text = await fs.readFileSync(__basedir + "\\generated\\" + filename)
         //console.log (text.toString('hex'))
 
