@@ -7,52 +7,73 @@ const scatter = require('../charts/scatter');
 const authorize = require('../helper/authorize')
 var fs = require('fs');
 
-
-
+function csvtojson(csvText){
+    let data = []
+    let rows = csvText.split('\n');
+    let col = rows[0].split('\r')[0].split(',')
+    //console.log(col)
+    for(let i=1 ; i<rows.length;i++){
+        var  r =  rows[i].split('\r')[0]
+        r =     r.split(',')
+        var json = {}
+        for(let j = 0; j<col.length;j++){
+            json[col[j]] = r[j]
+        }
+        data.push(json)
+    }
+    console.log(data[1])
+    return data
+}
 module.exports = function () {
     router.get('/', (req, res) => {
         res.status(200).send({
             message: 'vgenerate routes'
         })
     })
-
-    router.post('/:vname', authorize(), (req, res) => {
-        const vnameList = ['scatter', 'thaiPolygon', 'zoomablesunburst','barChart']; //add vname list here
+    router.post('/:vname', authorize(), async (req, res) => {
         var vname = req.params.vname;
         var config = JSON.parse(req.body.config);
-        var data = JSON.parse(req.body.data);
-        console.log('vname : ', vname);
-        console.log('config : ', config);
-        console.log('data : ', data);
-        if (vnameList.indexOf(vname) >= 0) {
-            if(vname=="thaiPolygon"){
-                var visualization = vgenService.Vgen.createThaiPolygon();
-                visualization.setJsontoJsonDataset(data, 'pro', 'label', 'data');
-            }
-            else if(vname == "barChart"){
-                var visualization = vgenService.Vgen.createBarChart();
-                visualization.setData(data);
-            }
-           
-            var html = visualization.generateHTML();
-            vgenService.generateRefId().then((refId) => {
-                fs.writeFileSync('generated/' + refId + '.html', html, (error) => { console.log(error) });
-                console.log("refId : " + refId);
-                console.log(req.user);
-                try {
-                    uploadController.uploadFiles(refId,req.user.username).then(() => {
-                        res.send(refId);
-                    })
-                } catch (err) {
-                    console.log(err);
+        if(req.files != undefined){
+            var data  = []
+            Object.keys(req.files).forEach(key=>{
+                if (req.files[key].mimetype == 'text/csv' ){
+                    data= csvtojson(req.files[key].data.toString())
                 }
             })
         }
         else {
+           var data =JSON.parse(req.body.data)
+        }
+        //console.log(req.user)
+        // var data = [{pro:'Nan',label:'Hello',data:123},{pro:'Nan',label:'Hello',data:153},
+        // {pro:'Nan',label:'Hello',data:143},{pro:'Bueng Kan',label:'Hello',data:233},{pro:'Bueng Kan',label:'Hello',data:523},{pro:'Bueng Kan',label:'Hello',data:323},
+        // {pro:'Bangkok',label:'Hello',data:173},{pro:'Bangkok',label:'Hello',data:193},
+        // {pro:'Bangkok',label:'Hello',data:133}];
+        // console.log('vname : ', vname);
+        try{    
+                var visualization = await vgenService.Vgen(vname.toLowerCase());
+                if (Object.keys(config).includes('width') &&Object.keys(config).includes('height') ){
+                    visualization.setWidth(config.width)
+                    visualization.setHeight(config.height)
+                }
+                visualization.setLabel(config.templatelabel)
+                visualization.setJsontoJsonDataset(data,config);
+                var html = visualization.generateHTML();
+                vgenService.generateRefId().then((refId) => {
+                    fs.writeFileSync('generated/' + refId + '.html', html, (error) => { console.log(error) });
+                    console.log("refId : " + refId);
+                    try {
+                        uploadController.uploadFiles(refId,req.user.username).then(() => {
+                            res.send(refId);
+                        })
+                    } catch (err) {
+                        console.log(err);
+                    }
+                })
+        }
+        catch(err) {
             res.status(400).json({ message : 'Error : Bad Request'})
         }
-
-
         /*
                 scatter.generate(config).then((refId) => {
                     console.log("id : " + refId);
@@ -68,15 +89,15 @@ module.exports = function () {
                 app.get('/thaiPolygon', (req, res) => {
                     var thaipoly = Vgen.Vgen.createThaiPolygon()
                     var JsonList=[
-                      {pro:'Nan',label:'Hello',data:123},
-                      {pro:'Nan',label:'Hello',data:153},
-                      {pro:'Nan',label:'Hello',data:143},
-                      {pro:'Bueng Kan',label:'Hello',data:233},
-                      {pro:'Bueng Kan',label:'Hello',data:523},
-                      {pro:'Bueng Kan',label:'Hello',data:323},
-                      {pro:'Bangkok',label:'Hello',data:173},
-                      {pro:'Bangkok',label:'Hello',data:193},
-                      {pro:'Bangkok',label:'Hello',data:133}
+                      {"pro":"Nan","label":'Hello',"data":123},
+                      {"pro":"Nan","label":'Hello',"data":153},
+                      {"pro":"Nan","label":'Hello',"data":143},
+                      {"pro":"Bueng Kan","label":'Hello',"data":233},
+                      {"pro":"Bueng Kan","label":'Hello',"data":523},
+                      {"pro":"Bueng Kan","label":'Hello',"data":323},
+                      {"pro":"Bangkok","label":'Hello',"data":173},
+                      {"pro":"Bangkok","label":'Hello',"data":193},
+                      {"pro":"Bangkok","label":'Hello',"data":133}
                     ];
                     thaipoly.setJsontoJsonDataset(JsonList,'pro','label','data')
                     res.send(thaipoly.generateHTML())

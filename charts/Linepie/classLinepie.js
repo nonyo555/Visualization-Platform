@@ -46,7 +46,9 @@ class LinePie{
     getHeight() {
         return this.height
     }
-    setJsontoJsonDataset(jsonList,datsetsLabelColumn,dataColumn){
+    setJsontoJsonDataset(jsonList,config){
+        let datsetsLabelColumn = config.label
+        let dataColumn = config.data
         jsonList.forEach(ajson =>{
             var label =  ajson[datsetsLabelColumn]
             var haveDataset = false;
@@ -95,5 +97,5 @@ class LinePie{
         return dom
     }
 }
-var object = new LinePie()
+function object (){return   new LinePie()}
 module.exports= {object}

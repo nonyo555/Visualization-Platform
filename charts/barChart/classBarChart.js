@@ -106,5 +106,5 @@ class BarChart {
         return dom.serialize()
     }
 }
-var object = new BarChart();
+function object (){return  new BarChart();}
 module.exports = {object}

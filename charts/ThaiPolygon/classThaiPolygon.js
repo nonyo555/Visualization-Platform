@@ -82,10 +82,12 @@ class ThaiPolygon{
             )
         })
     }
-    setJsontoJsonDataset(jsonList,provinceColumn,datsetsLabelColumn,dataColumn){
+    setJsontoJsonDataset(jsonList,config){
+        let provinceColumn =    config.province
+        let datsetsLabelColumn = config.label
+        let dataColumn = config.data
         jsonList.forEach(ajson =>{
-            var province =  ajson[provinceColumn]
-            //console.log(province)
+            let province =  ajson[provinceColumn]
             if (Object.keys(this.json).includes(province)){
                 var haveDataset = false;
                 this.json[province].forEach(ele =>{
@@ -103,6 +105,7 @@ class ThaiPolygon{
                 this.json[province] = [{'label':ajson[datsetsLabelColumn] ,'data':[ajson[dataColumn]]}]
             }
         })
+        //console.log(this.json['Nan'][1].data)
     }
     getJson(){
         return this.json
@@ -116,11 +119,29 @@ class ThaiPolygon{
         }
         throw 'Labels is not Array'
     }
+    setWidth(width) {
+        if (typeof width === 'number'){
+        this.width = width
+        }
+    }
+    setHeight(height) {
+        if (typeof height === 'number'){
+        this.height = height
+        }
+    }
+    getWidth() {
+       return this.width
+    }
+    getHeight() {
+        return this.height
+    }
     generateHTML(){
         this.json = checkColorSetting(this.json)
+        console.log(this.label)
         for (let i =0;i<this.label.length;i++){
-            this.label[i]= `'`+this.label[i]+`'`
+            this.label[i] = `'`+this.label[i]+`'`
         }
+        console.log(this.label)
         var dom = new JSDOM(`
                 </html><!DOCTYPE html>
                 <html lang="en">
@@ -157,5 +178,6 @@ class ThaiPolygon{
         return dom.serialize()
     }
 }
-var object = new ThaiPolygon();
+
+function object (){return  new ThaiPolygon();}
 module.exports = {object}

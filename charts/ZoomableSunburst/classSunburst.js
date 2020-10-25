@@ -488,7 +488,6 @@ class Sunburst {
         if (typeof path == 'string' && typeof mode == 'string'){   
             var curr = this.json
             var parent = this.json
-
             // must config with specific key
             // example jconfig ={'name':"name2",'children':'children2','value':'value2'} 
             // {'name2': 123} = > {'name': 123}
@@ -580,5 +579,5 @@ class Sunburst {
         return dom.serialize();
     }
 }
-var object = new Sunburst()
+function object (){return   new Sunburst()}
 module.exports = {object}
