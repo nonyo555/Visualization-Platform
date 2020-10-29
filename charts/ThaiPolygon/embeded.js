@@ -22,56 +22,10 @@ function thaiPolygon(label,chartData,rwidth,rheight){
     //   //[{'province': 'abc','datasets':[{'label': 'abcdefg',backgroundColor: '#ff6384',data:[]}]]
     // }
     
-      var randomScalingFactor = function(){ return Math.round(Math.random()*256)};
+      //var randomScalingFactor = function(){ return Math.round(Math.random()*256)};
       var barChartData = {
       labels: label,
-      datasets: [{
-        label: 'Dataset 1',
-        backgroundColor: '#ff6384',
-        data: [
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor()
-        ]
-      }, {
-        label: 'Dataset 2',
-        backgroundColor: '#36a2eb',
-        data: [
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor()
-        ]
-      }, {
-        label: 'Dataset 3',
-        backgroundColor: '#4bc0c0',
-        data: [
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor(),
-          randomScalingFactor()
-        ]
-      }]
+      datasets: []
       };
       window.onload = function() {
       var ctx = document.getElementById('canvas').getContext('2d');
@@ -309,7 +263,6 @@ function thaiPolygon(label,chartData,rwidth,rheight){
         //     return randomScalingFactor();
         //   });
         // });
-        window.myBar.update(500);
         } 
         else {
           d3.select('canvas').style('visibility','hidden')
@@ -319,7 +272,7 @@ function thaiPolygon(label,chartData,rwidth,rheight){
           k = 1;
           centered = null;
         }
-        
+        window.myBar.update(500);
         // Highlight the clicked province
         mapLayer.selectAll('path')
           .style('fill', function(d){return centered && d===centered ? '#D5708B' : checkProvinceNoData(d);});

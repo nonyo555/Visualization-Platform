@@ -3,7 +3,6 @@ const router = express.Router();
 const uploadController = require("../controller/upload");
 const downloadController = require("../controller/download");
 const vgenService = require('../services/vgenService');
-const scatter = require('../charts/scatter');
 const authorize = require('../helper/authorize')
 var fs = require('fs');
 
@@ -11,7 +10,6 @@ function csvtojson(csvText){
     let data = []
     let rows = csvText.split('\n');
     let col = rows[0].split('\r')[0].split(',')
-    //console.log(col)
     for(let i=1 ; i<rows.length;i++){
         var  r =  rows[i].split('\r')[0]
         r =     r.split(',')
@@ -21,7 +19,6 @@ function csvtojson(csvText){
         }
         data.push(json)
     }
-    console.log(data[1])
     return data
 }
 module.exports = function () {
@@ -33,6 +30,7 @@ module.exports = function () {
     router.post('/:vname', authorize(), async (req, res) => {
         var vname = req.params.vname;
         var config = JSON.parse(req.body.config);
+        //console.log(Object.keys(req.files).name)
         if(req.files != undefined){
             var data  = []
             Object.keys(req.files).forEach(key=>{
@@ -42,7 +40,13 @@ module.exports = function () {
             })
         }
         else {
+           try{ 
            var data =JSON.parse(req.body.data)
+           }
+           catch{
+            res.status(400).json({ message : 'Error : Data format (JSON) is incorrect'})
+            return
+           }
         }
         //console.log(req.user)
         // var data = [{pro:'Nan',label:'Hello',data:123},{pro:'Nan',label:'Hello',data:153},
@@ -52,7 +56,8 @@ module.exports = function () {
         // console.log('vname : ', vname);
         try{    
                 var visualization = await vgenService.Vgen(vname.toLowerCase());
-                if (Object.keys(config).includes('width') &&Object.keys(config).includes('height') ){
+                let keys =Object.keys(config)
+                if (keys.includes('width') &&keys.includes('height') ){
                     visualization.setWidth(config.width)
                     visualization.setHeight(config.height)
                 }
@@ -72,7 +77,8 @@ module.exports = function () {
                 })
         }
         catch(err) {
-            res.status(400).json({ message : 'Error : Bad Request'})
+            //console.log(err)
+            res.status(400).json({ message : 'Error : Bad Request'+err})
         }
         /*
                 scatter.generate(config).then((refId) => {

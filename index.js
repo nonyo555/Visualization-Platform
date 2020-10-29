@@ -13,6 +13,7 @@ const templatedb = require('./models/template.db')
 
 const authentication = require('./routes/authentication')(io);
 const vgenerate = require('./routes/vgenerate')(io);
+const manageTemplate = require('./routes/manageTemplate')(io);
 
 global.__basedir = __dirname;
 
@@ -31,6 +32,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use('/api/authentication', authentication);
 app.use('/api/vgenerate', vgenerate);
+app.use('/api/manageTemplate', manageTemplate);
 
 app.get('/', (req, res) => {
     res.status(200).send({

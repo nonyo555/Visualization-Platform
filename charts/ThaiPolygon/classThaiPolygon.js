@@ -117,7 +117,7 @@ class ThaiPolygon{
         if(Array.isArray(label)){
             this.label=label
         }
-        throw 'Labels is not Array'
+        else{throw 'Label is not Array'}
     }
     setWidth(width) {
         if (typeof width === 'number'){
@@ -137,7 +137,7 @@ class ThaiPolygon{
     }
     generateHTML(){
         this.json = checkColorSetting(this.json)
-        console.log(this.label)
+        //console.log(this.label)
         for (let i =0;i<this.label.length;i++){
             this.label[i] = `'`+this.label[i]+`'`
         }

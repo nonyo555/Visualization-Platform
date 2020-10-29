@@ -1,5 +1,4 @@
 const fs = require('fs');
-//const Vgen = require('../services/vgenTest.js')
 const templatedb = require("../models/template.db");
 const template = templatedb.template;
 async function deleteTemplate(templateName){
@@ -9,28 +8,28 @@ async function deleteTemplate(templateName){
         }
     })
 }
-function updateTemplate(directoryPath,fileNameList,fileTextList){
-    for(var i = 0 ; i<fileNameList.length.length;i++){
-        fs.writeFileSync(directoryPath+fileNameList[i], JSON.stringify(fileTextList[i]));
+function updateTemplate(templateName,fileNameList,fileTextList){
+    for(var i = 0 ; i<fileNameList.length;i++){
+        fs.writeFileSync('charts/'+templateName+'/'+fileNameList[i], JSON.stringify(fileTextList[i]));
     }
 }
-async function addTemplate(templateName,classPath,directoryPath,fileNameList,fileTextList){
+async function addTemplate(templateName,classFileName,fileNameList,fileTextList){
     var check = await template.findOne({
         where : {
             'TemplateName' : templateName
         }
     })
-    console.log(check)
+    //console.log(check)
     if (check == null){
     await template.create({
         'TemplateName': templateName,
-        'Path': classPath
+        'Path': '../charts/'+templateName+'/'+classFileName
       }, );
-    if (!fs.existsSync(directoryPath)){
-        fs.mkdirSync(directoryPath)
+    if (!fs.existsSync('charts/'+templateName)){
+        fs.mkdirSync('charts/'+templateName)
     }
     for(let i = 0 ; i<fileNameList.length;i++){
-        fs.writeFileSync(directoryPath+fileNameList[i], JSON.stringify(fileTextList[i]));
+        fs.writeFileSync('charts/'+templateName+'/'+fileNameList[i], JSON.stringify(fileTextList[i]));
     }
     }
     else{

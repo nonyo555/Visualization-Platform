@@ -480,6 +480,7 @@ class Sunburst {
         if(typeof label == 'string' || typeof label =='function'){
             this.label = label
         }
+        else{throw 'Label is not Array'}
     }
     getLabel(){
         return this.label
