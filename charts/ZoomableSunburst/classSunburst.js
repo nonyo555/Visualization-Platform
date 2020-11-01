@@ -51,7 +51,20 @@ function jsonSingleValue(json){
     }
     return json
 }
-
+function findPath(json,parent){
+    if(json.name == parent){
+        return json.name
+    }
+    else{
+        json.children.forEach(ele => {
+            let result = findPath(ele,parent)
+            if (result != ""){
+                return  json.name+"/"+result
+            }
+        });
+    }
+    return ""
+}
 class Sunburst {
     constructor(){
     this.width = 800;
@@ -549,6 +562,29 @@ class Sunburst {
         else{
             throw 'err';
         }
+    }
+    setJsontoJsonDataset(jsonList,config){
+        if(config.mode =='set'){
+            this.genJson('set','',jsonList,config.jsonConfig)
+        }
+        else{
+            var Errcount = jsonList.length*2; 
+            while(jsonList){
+                let json = jsonList.shift()
+                let path = findPath(this.json,json[config.jsonConfig.parent])
+                if (path!= ""){
+                    this.genJson('addChild',path,json,config.jsonConfig)
+                }
+                else{
+                    jsonList.push(json)
+                    Errcount-=1;
+                    if (count ==0){
+                        break;
+                    }
+                }
+            }
+        }
+
     }
     getJson(){
         return this.json
