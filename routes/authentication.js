@@ -9,11 +9,11 @@ const Role = require('../helper/role')
 module.exports = function () {
     router.post('/authenticate', authenticateSchema, authenticate);
     router.post('/register', registerSchema, register);
-    router.get('/', authorize(Role.admin), getAll);
+    router.get('/', authorize([Role.superadmin, Role.admin]), getAll);
     router.get('/current',  authorize(), getCurrent);
-    router.get('/:id',  authorize(Role.admin), getById);
-    router.put('/:id',  authorize(Role.admin), updateSchema, update);
-    router.delete('/:id',  authorize(Role.admin), _delete);
+    router.get('/:id',  authorize([Role.superadmin, Role.admin]), getById);
+    router.put('/:id',  authorize([Role.superadmin, Role.admin]), updateSchema, update);
+    router.delete('/:id',  authorize([Role.superadmin, Role.admin]), _delete);
 
     return router;
 };
@@ -38,7 +38,6 @@ function registerSchema(req, res, next) {
         lastName: Joi.string().required(),
         username: Joi.string().required(),
         password: Joi.string().min(6).required(),
-        role: Joi.string().valid('user','admin','designer')
     });
     validateRequest(req, next, schema);
 }
@@ -56,7 +55,10 @@ function getAll(req, res, next) {
 }
 
 function getCurrent(req, res, next) {
-    res.json(req.user);
+    //res.json(req.user);
+    authService.getById(req.user.sub)
+        .then(user => res.json(user))
+        .catch(next);
 }
 
 function getById(req, res, next) {
@@ -70,13 +72,14 @@ function updateSchema(req, res, next) {
         firstName: Joi.string().empty(''),
         lastName: Joi.string().empty(''),
         username: Joi.string().empty(''),
-        password: Joi.string().min(6).empty('')
+        password: Joi.string().min(6).empty(''),
+        role: Joi.string().valid('user','admin','designer')
     });
     validateRequest(req, next, schema);
 }
 
 function update(req, res, next) {
-    authService.update(req.params.id, req.body)
+    authService.update(req.params.id, req.body, req.user.role)
         .then(user => res.json(user))
         .catch(next);
 }

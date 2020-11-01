@@ -1,4 +1,5 @@
 const authorize = require('../helper/authorize')
+const Role = require('../helper/role')
 const express = require('express');
 const router = express.Router();
 const templateService = require('../services/templateService')
@@ -7,7 +8,7 @@ module.exports = function () {
         res.status(200).send({
             message: 'Manage Template routes'
         })
-    router.post('/',authorize(),async (req, res) => {
+    router.post('/',authorize(Role.designer),async (req, res) => {
         let keys = Object.keys(req.files)
         let fileNameList =[]
         let fileTextList = []
@@ -29,7 +30,7 @@ module.exports = function () {
         }
     }
     )
-    router.put('/',authorize(),(req, res) => {
+    router.put('/',authorize(Role.designer),(req, res) => {
         let keys = Object.keys(req.files)
         let fileNameList =[]
         let fileTextList = []
@@ -44,7 +45,7 @@ module.exports = function () {
             message: 'Updated'
         })
     })
-    router.delete('/',authorize(),(req, res) => {
+    router.delete('/',authorize(Role.designer),(req, res) => {
         let templateName = req.body.templateName
         templateService.deleteTemplate(templateName)
         res.status(200).send({

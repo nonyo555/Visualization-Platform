@@ -2,6 +2,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('../models/user.db');
+const { user } = require('../helper/role');
 
 module.exports = {
     authenticate,
@@ -46,8 +47,12 @@ async function create(params) {
     await db.User.create(params);
 }
 
-async function update(id, params) {
+async function update(id, params, role) {
     const user = await getUser(id);
+
+    //super admin can't be updated by other
+    if(user.role == 'superadmin' && role != 'superadmin')
+        throw 'Cannot update super admin role';
 
     // validate
     const usernameChanged = params.username && user.username !== params.username;
@@ -60,6 +65,8 @@ async function update(id, params) {
         params.hash = await bcrypt.hash(params.password, 10);
     }
 
+    
+
     // copy params to user and save
     Object.assign(user, params);
     await user.save();
@@ -69,6 +76,11 @@ async function update(id, params) {
 
 async function _delete(id) {
     const user = await getUser(id);
+
+    //super admin can't be deleted
+    if(user.role == "superadmin")
+        throw 'Cannot delete superadmin';
+
     await user.destroy();
 }
 
