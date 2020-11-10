@@ -23,6 +23,16 @@ class BarChart {
         if(data!=[])
             this.data = data;
     }
+    setAttr(data,config){
+        var keys = Object.keys(config)
+        //if (key.includes = )
+        if (keys.includes('width') &&keys.includes('height') ){
+            this.setWidth(config.width)
+            this.setHeight(config.height)
+        }
+        //this.setLabel(config.templatelabel)
+        this.setData(data);
+    }
     getWidth() {
        return this.width
     }

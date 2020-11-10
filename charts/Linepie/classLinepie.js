@@ -40,6 +40,16 @@ class LinePie{
         this.height = height
         }
     }
+    setAttr(data,config){
+        var keys = Object.keys(config)
+        //if (key.includes = )
+        if (keys.includes('width') &&keys.includes('height') ){
+            this.setWidth(config.width)
+            this.setHeight(config.height)
+        }
+        this.setLabel(config.templatelabel)
+        this.setJsontoJsonDataset(data,config);
+    }
     getWidth() {
        return this.width
     }
@@ -64,7 +74,6 @@ class LinePie{
             }
         })
         this.pieJson = updatePieJson(this.lineJson)
-
     }
     generateHTML(percenMode = false){
         this.lineJson = checkColorSetting2(this.lineJson)

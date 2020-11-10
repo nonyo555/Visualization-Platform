@@ -107,6 +107,16 @@ class ThaiPolygon{
         })
         //console.log(this.json['Nan'][1].data)
     }
+    setAttr(data,config){
+        var keys = Object.keys(config)
+        //if (key.includes = )
+        if (keys.includes('width') &&keys.includes('height') ){
+            this.setWidth(config.width)
+            this.setHeight(config.height)
+        }
+        this.setLabel(config.templatelabel)
+        this.setJsontoJsonDataset(data,config);
+    }
     getJson(){
         return this.json
     }

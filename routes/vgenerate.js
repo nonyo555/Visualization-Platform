@@ -15,9 +15,14 @@ function csvtojson(csvText){
         r =     r.split(',')
         var json = {}
         for(let j = 0; j<col.length;j++){
-            json[col[j]] = r[j]
+            if (r[j]!= "" && r[j] != undefined){
+                json[col[j]] = r[j]
+            }
         }
+        // {} == {} => false wtf
+        if(Object.keys(json).length != 0){
         data.push(json)
+        }
     }
     return data
 }
@@ -56,13 +61,7 @@ module.exports = function () {
         // console.log('vname : ', vname);
         try{    
                 var visualization = await vgenService.Vgen(vname.toLowerCase());
-                let keys =Object.keys(config)
-                if (keys.includes('width') &&keys.includes('height') ){
-                    visualization.setWidth(config.width)
-                    visualization.setHeight(config.height)
-                }
-                visualization.setLabel(config.templatelabel)
-                visualization.setJsontoJsonDataset(data,config);
+                await visualization.setAttr(data,config)
                 var html = visualization.generateHTML();
                 vgenService.generateRefId().then((refId) => {
                     fs.writeFileSync('generated/' + refId + '.html', html, (error) => { console.log(error) });

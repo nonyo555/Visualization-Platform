@@ -51,19 +51,25 @@ function jsonSingleValue(json){
     }
     return json
 }
-function findPath(json,parent){
+async function findPath(json,parent){
     if(json.name == parent){
         return json.name
     }
     else{
-        json.children.forEach(ele => {
-            let result = findPath(ele,parent)
-            if (result != ""){
-                return  json.name+"/"+result
+        let  result = "" 
+        if ( Object.keys(json).includes('children')){
+            for (let i = 0 ; i<json.children.length;i++){
+                let ele  = json.children[i]
+                let j = await findPath(ele,parent)
+                if (j != "" && i != undefined){
+                    result =  json.name+"/"+j
+                    break
+                }
             }
-        });
+        }   
+        console.log(json.name+":"+result)
+        return result
     }
-    return ""
 }
 class Sunburst {
     constructor(){
@@ -74,7 +80,7 @@ class Sunburst {
     this.json= {'name': 'root','children':[]}
     //example data 
     //change name to 'json' to test
-    this.json = {
+    this.json2 = {
         "name": "flare",
         "children": [
          {
@@ -484,7 +490,7 @@ class Sunburst {
     getTitle(){
         return this.title
     }
-    setlabel(label){
+    setLabel(label){
         // write a function or  str to config title
         // function must have a 'd' in parameter
         // {d} d is a node and d.data is a json in that path
@@ -527,18 +533,11 @@ class Sunburst {
             }
             if(mode == 'addChild'){
                 var keys = Object.keys(curr)
-                if (!Array.isArray(json)){
-                    json = [json]
-                }
                 if (keys.includes('children')){
-                    if (Array.isArray(curr['children'])){
-                        curr['children'].concat(json)
-                    }
-                    else{
-                        json.concat(curr['children'])
-                }}
+                    curr['children'].push(json)    
+                }
                 else{
-                    curr['children'] = json
+                    curr['children'] = [json]
                 }
             }
             else if(mode == 'addValue'){
@@ -563,33 +562,51 @@ class Sunburst {
             throw 'err';
         }
     }
-    setJsontoJsonDataset(jsonList,config){
+    async setAttr(data,config){
+        //console.log(data)
+        var keys = Object.keys(config)
+        if (keys.includes('width') &&keys.includes('height') ){
+            this.setWidth(config.width)
+            this.setHeight(config.height)
+        }
+        this.setLabel(config.label)
+        await this.setJsontoJsonDataset(data,config);
+    }
+    async setJsontoJsonDataset(jsonList,config){
         if(config.mode =='set'){
             this.genJson('set','',jsonList,config.jsonConfig)
         }
         else{
             var Errcount = jsonList.length*2; 
-            while(jsonList){
+            while(jsonList.length != 0){
+                //console.log(jsonList)
                 let json = jsonList.shift()
-                let path = findPath(this.json,json[config.jsonConfig.parent])
-                if (path!= ""){
+                let path=""
+                let  haveParent =Object.keys(json).includes(config.jsonConfig.parent)
+                if( haveParent ){
+                    path = await findPath(this.json,json[config.jsonConfig.parent])
+                    //console.log(path)
+                    console.log('____________')
+                }
+                if (path!= "" || !haveParent ){
                     this.genJson('addChild',path,json,config.jsonConfig)
                 }
                 else{
                     jsonList.push(json)
                     Errcount-=1;
-                    if (count ==0){
+                    if (Errcount ==0){
                         break;
                     }
                 }
             }
         }
-
     }
     getJson(){
         return this.json
     }
     generateHTML(singleValue = false){
+        console.log(this.json )
+        console.log("xxxxx")
         this.json = checkJsonconfig(this.json)
         if(singleValue == true){
         this.json = jsonSingleValue(this.json)
