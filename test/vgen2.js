@@ -1,4 +1,4 @@
-var filedb = require("../models/template.db");
+var filedb = require("../models/template/template.db");
 var  template = filedb.template;
 async function Vgen(templateName){
     var result = await template.findOne({

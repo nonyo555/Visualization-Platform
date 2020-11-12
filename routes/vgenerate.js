@@ -6,41 +6,25 @@ const vgenService = require('../services/vgenService');
 const authorize = require('../helper/authorize')
 var fs = require('fs');
 
-function csvtojson(csvText){
-    let data = []
-    let rows = csvText.split('\n');
-    let col = rows[0].split('\r')[0].split(',')
-    for(let i=1 ; i<rows.length;i++){
-        var  r =  rows[i].split('\r')[0]
-        r =     r.split(',')
-        var json = {}
-        for(let j = 0; j<col.length;j++){
-            if (r[j]!= "" && r[j] != undefined){
-                json[col[j]] = r[j]
-            }
-        }
-        // {} == {} => false wtf
-        if(Object.keys(json).length != 0){
-        data.push(json)
-        }
-    }
-    return data
-}
 module.exports = function () {
     router.get('/', (req, res) => {
         res.status(200).send({
             message: 'vgenerate routes'
         })
-    })
+    });
     router.post('/:vname', authorize(), async (req, res) => {
+        console.log(req.files);
+        console.log(req.body.config);
         var vname = req.params.vname;
         var config = JSON.parse(req.body.config);
         //console.log(Object.keys(req.files).name)
+        
         if(req.files != undefined){
             var data  = []
             Object.keys(req.files).forEach(key=>{
                 if (req.files[key].mimetype == 'text/csv' ){
-                    data= csvtojson(req.files[key].data.toString())
+                    data= vgenService.csvtojson(req.files[key].data.toString())
+                    console.log(data)
                 }
             })
         }
@@ -68,7 +52,7 @@ module.exports = function () {
                     console.log("refId : " + refId);
                     try {
                         uploadController.uploadFiles(refId,req.user.username).then(() => {
-                            res.send(refId);
+                            res.json({refId : refId, visualization_name : vname, username : req.user.username})
                         })
                     } catch (err) {
                         console.log(err);
@@ -109,7 +93,7 @@ module.exports = function () {
                   })
                   
         */
-    })
+    });
 
     router.get('/d3/:refId', authorize(), (req, res) => {
         var refId = req.params.refId;
@@ -126,7 +110,22 @@ module.exports = function () {
             console.log(err);
             res.status(404).json({ message: 'Not Found'});
         })
-    })
+    });
+
+    router.get('/d3', authorize(), (req, res) => {
+        const uid = req.user.id;
+
+        console.log(uid);
+
+        downloadController.getAllRefId(uid).then((res) => {
+            if(res!=null)
+                res.send(res);
+            else
+                res.json({ message : "error"});
+        })
+
+
+    });
 
     return router;
 }

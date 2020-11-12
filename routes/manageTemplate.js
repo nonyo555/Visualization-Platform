@@ -7,12 +7,16 @@ module.exports = function () {
     router.get('/', (req, res) => {
         res.status(200).send({
             message: 'Manage Template routes'
-        })
+        });
+    })
+
     router.post('/',authorize(Role.designer),async (req, res) => {
+        console.log(req.files)
         let keys = Object.keys(req.files)
         let fileNameList =[]
         let fileTextList = []
         keys.forEach(key=>{
+            console.log("keys : ",key)
             fileNameList.push(req.files[key].name)
             fileTextList.push(req.files[key].data.toString())
         })
@@ -28,8 +32,8 @@ module.exports = function () {
         catch(err){
             res.status(400).json({ message : 'Error : Bad Request =>'+err})
         }
-    }
-    )
+    });
+    
     router.put('/',authorize(Role.designer),(req, res) => {
         let keys = Object.keys(req.files)
         let fileNameList =[]
@@ -44,14 +48,15 @@ module.exports = function () {
         res.status(200).send({
             message: 'Updated'
         })
-    })
+    });
+
     router.delete('/',authorize(Role.designer),(req, res) => {
         let templateName = req.body.templateName
         templateService.deleteTemplate(templateName)
         res.status(200).send({
             message: 'Deleted'
         })
-    })   
-    })
+    });   
+
     return router
 }

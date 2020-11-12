@@ -1,7 +1,7 @@
 const uploadController = require("../controller/upload");
-const filedb = require("../models/file.db");
+const filedb = require("../models/file/file.db");
 const file = filedb.file;
-const templatedb = require("../models/template.db");
+const templatedb = require("../models/template/template.db");
 const template = templatedb.template;
 //check refId if already in db
 async function isRefIdUnique(refId) {
@@ -27,6 +27,27 @@ async function generateRefId() {
   return result;
 }
 
+function csvtojson(csvText){
+  let data = []
+  let rows = csvText.split('\n');
+  let col = rows[0].split('\r')[0].split(',')
+  for(let i=1 ; i<rows.length;i++){
+      var  r =  rows[i].split('\r')[0]
+      r =     r.split(',')
+      var json = {}
+      for(let j = 0; j<col.length;j++){
+          if (r[j]!= "" && r[j] != undefined){
+              json[col[j]] = r[j]
+          }
+      }
+      // {} == {} => false wtf
+      if(Object.keys(json).length != 0){
+      data.push(json)
+      }
+  }
+  return data
+}
+
 async function Vgen(templateName){
     var result = await template.findOne({
         where : {
@@ -41,4 +62,4 @@ async function Vgen(templateName){
           throw 'Not know this templateName'
       }
 }
-module.exports = { Vgen, generateRefId }
+module.exports = { Vgen, generateRefId, csvtojson }

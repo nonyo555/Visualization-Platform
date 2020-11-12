@@ -1,7 +1,7 @@
 ﻿﻿const config = require('../config/db.user.config.json');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const db = require('../models/user.db');
+const db = require('../models/user/user.db');
 const { user } = require('../helper/role');
 
 module.exports = {

@@ -1,5 +1,5 @@
 const fs = require('fs');
-const templatedb = require("../models/template.db");
+const templatedb = require("../models/template/template.db");
 const template = templatedb.template;
 async function deleteTemplate(templateName){
     await template.destroy({
