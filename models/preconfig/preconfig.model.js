@@ -1,7 +1,8 @@
 module.exports = (sequelize, DataTypes) => {
     const attributes = {
-        refId: { type: DataTypes.INTEGER, allowNull: false },
-        data: { type: DataTypes.BLOB("long"), allowNull: false },
+        file_id: { type: DataTypes.INTEGER, allowNull: false },
+        vname: { type: DataTypes.STRING, allowNull: false},
+        data: { type: DataTypes.STRING, allowNull: false },
         config: { type: DataTypes.STRING, allowNull: false },
     };
     return sequelize.define('preconfig', attributes);

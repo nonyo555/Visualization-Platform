@@ -50,8 +50,10 @@ module.exports = function () {
                     console.log("refId : " + refId);
                     console.log(req.user)
                     try {
-                        vgenService.create(refId,req.user.sub).then(() => {
-                            res.json({refId : refId, visualization_name : vname})
+                        vgenService.create(refId,req.user.sub).then((file_id) => {
+                            vgenService.savePreconfig(file_id,vname,JSON.stringify(data),JSON.stringify(config)).then(() => {
+                                res.status(200).json({refId : refId, visualization_name : vname})
+                            })
                         })
                     } catch (err) {
                         console.log(err);

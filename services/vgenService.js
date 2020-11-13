@@ -1,13 +1,17 @@
 const filedb = require("../models/file/file.db");
+const preconfigdb = require("../models/preconfig/preconfig.db")
 const templatedb = require("../models/template/template.db");
 const template = templatedb.template
 const fs = require("fs");
+const { ref } = require("joi");
+const { update } = require("./authService");
 
 module.exports = { 
     create,
     Vgen, 
     generateRefId, 
     csvtojson,
+    savePreconfig,
     getFiles,
     getAllRefId,
     delete: _delete
@@ -60,6 +64,7 @@ function csvtojson(csvText){
 
 async function create(refId, uid){
   try {
+      var file_id;
       const filename = refId + ".html";
       const path = __basedir + "\\generated\\" + filename;
       console.log(path);
@@ -68,7 +73,7 @@ async function create(refId, uid){
 
       if (fs.existsSync(path)) {
           console.log("file exist");
-          filedb.file.create({
+          await filedb.file.create({
               refId: refId,
               data: fs.readFileSync(path),
               user_id: uid,
@@ -78,13 +83,41 @@ async function create(refId, uid){
                   __basedir + "\\resource\\tmp\\" + file.refId + ".html",
                   file.data
               )
+              file_id = file.dataValues.id;
           });
+        return file_id;  
       }
+      
   } catch (error) {
       console.log(error);
   }
+
 };
 
+async function savePreconfig(file_id,vname,data,config){
+  try{
+    const preconfig = await preconfigdb.preconfig.findOne({where : {file_id : file_id}})
+
+    //already have a preconfig for this file
+    if(preconfig){
+      let params = {file_id : file_id, vname: vname, data: data, config: config}
+      Object.assign(preconfig, params);
+      await preconfig.save();
+    } //new preconfig
+    else{
+      preconfigdb.preconfig.create({
+        file_id: file_id,
+        vname: vname,
+        data: data,
+        config: config
+      }).then((result) => {
+        console.log("result :" , result);
+      })
+    }
+  } catch(error){
+      console.log(error);
+  }
+}
 
 async function getFiles(refId, uid){
   const result = await filedb.file.findOne({
