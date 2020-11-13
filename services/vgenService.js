@@ -1,15 +1,25 @@
-const uploadController = require("../controller/upload");
 const filedb = require("../models/file/file.db");
-const file = filedb.file;
 const templatedb = require("../models/template/template.db");
-const template = templatedb.template;
-//check refId if already in db
+const template = templatedb.template
+const fs = require("fs");
+
+module.exports = { 
+    create,
+    Vgen, 
+    generateRefId, 
+    csvtojson,
+    getFiles,
+    getAllRefId,
+    delete: _delete
+};
+    
 async function isRefIdUnique(refId) {
-  if(await file.findOne({where: { refId: refId }})){
+  if(await filedb.file.findOne({where: { refId: refId }})){
     return false;
   }
   return true;
 }
+
 async function generateRefId() {
   var result = '';
   var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -48,6 +58,69 @@ function csvtojson(csvText){
   return data
 }
 
+async function create(refId, uid){
+  try {
+      const filename = refId + ".html";
+      const path = __basedir + "\\generated\\" + filename;
+      console.log(path);
+      //var text = await fs.readFileSync(__basedir + "\\generated\\" + filename)
+      //console.log (text.toString('hex'))
+
+      if (fs.existsSync(path)) {
+          console.log("file exist");
+          filedb.file.create({
+              refId: refId,
+              data: fs.readFileSync(path),
+              user_id: uid,
+              status: 'active'
+          }).then((file) => {
+              fs.writeFileSync(
+                  __basedir + "\\resource\\tmp\\" + file.refId + ".html",
+                  file.data
+              )
+          });
+      }
+  } catch (error) {
+      console.log(error);
+  }
+};
+
+
+async function getFiles(refId, uid){
+  const result = await filedb.file.findOne({
+      where : {
+          refId : refId,
+          user_id : uid
+      }
+  })
+  return result;
+}
+
+async function getAllRefId(uid){
+  const result = await filedb.file.findAll({
+      attributes : ['refId','status'],
+      where : {
+          user_id : uid
+      }
+  })
+  return result;
+}
+
+async function _delete(id,uid) {
+  const file = await getFile(id);
+  if(file.user_id == uid)
+    await file.destroy();
+  else
+    throw 'Unauthorized : Cannot delete other user\'s file'
+}
+
+async function getFile(id) {
+  const file = await filedb.file.findByPk(id);
+  if (!file) throw 'File not found';
+  return file;
+}
+
+
 async function Vgen(templateName){
     var result = await template.findOne({
         where : {
@@ -62,4 +135,4 @@ async function Vgen(templateName){
           throw 'Not know this templateName'
       }
 }
-module.exports = { Vgen, generateRefId, csvtojson }
+

@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const uploadController = require("../controller/upload");
-const downloadController = require("../controller/download");
 const vgenService = require('../services/vgenService');
 const authorize = require('../helper/authorize')
 var fs = require('fs');
+const Role = require('../helper/role');
 
 module.exports = function () {
     router.get('/', (req, res) => {
@@ -12,9 +11,8 @@ module.exports = function () {
             message: 'vgenerate routes'
         })
     });
-    router.post('/:vname', authorize(), async (req, res) => {
-        console.log(req.files);
-        console.log(req.body.config);
+
+    router.post('/:vname', authorize([Role.user,Role.designer]), async (req, res) => {
         var vname = req.params.vname;
         var config = JSON.parse(req.body.config);
         //console.log(Object.keys(req.files).name)
@@ -22,7 +20,7 @@ module.exports = function () {
         if(req.files != undefined){
             var data  = []
             Object.keys(req.files).forEach(key=>{
-                if (req.files[key].mimetype == 'text/csv' ){
+                if (req.files[key].mimetype == 'text/csv' || req.files[key].mimetype == 'application/vnd.ms-excel'){
                     data= vgenService.csvtojson(req.files[key].data.toString())
                     console.log(data)
                 }
@@ -30,7 +28,7 @@ module.exports = function () {
         }
         else {
            try{ 
-           var data =JSON.parse(req.body.data)
+                var data =JSON.parse(req.body.data)
            }
            catch{
             res.status(400).json({ message : 'Error : Data format (JSON) is incorrect'})
@@ -44,15 +42,16 @@ module.exports = function () {
         // {pro:'Bangkok',label:'Hello',data:133}];
         // console.log('vname : ', vname);
         try{    
-                var visualization = await vgenService.Vgen(vname.toLowerCase());
+                let visualization = await vgenService.Vgen(vname.toLowerCase());
                 await visualization.setAttr(data,config)
-                var html = visualization.generateHTML();
+                let html = visualization.generateHTML();
                 vgenService.generateRefId().then((refId) => {
                     fs.writeFileSync('generated/' + refId + '.html', html, (error) => { console.log(error) });
                     console.log("refId : " + refId);
+                    console.log(req.user)
                     try {
-                        uploadController.uploadFiles(refId,req.user.username).then(() => {
-                            res.json({refId : refId, visualization_name : vname, username : req.user.username})
+                        vgenService.create(refId,req.user.sub).then(() => {
+                            res.json({refId : refId, visualization_name : vname})
                         })
                     } catch (err) {
                         console.log(err);
@@ -61,7 +60,7 @@ module.exports = function () {
         }
         catch(err) {
             //console.log(err)
-            res.status(400).json({ message : 'Error : Bad Request'+err})
+            res.status(400).json({ message : 'Error : Bad Request '+err})
         }
         /*
                 scatter.generate(config).then((refId) => {
@@ -95,14 +94,11 @@ module.exports = function () {
         */
     });
 
-    router.get('/d3/:refId', authorize(), (req, res) => {
-        var refId = req.params.refId;
-        const username = req.user.username;
-
-        console.log(refId);
-        console.log(username);
+    router.get('/d3/:refId', authorize([Role.user,Role.designer]), (req, res) => {
+        let refId = req.params.refId;
+        let uid = req.user.sub;
         
-        downloadController.downloadFiles(refId, username).then((resfile) => {
+        vgenService.getFiles(refId, uid).then((resfile) => {
             if(resfile)
                 res.send(resfile.data.toString('utf8'))
             else res.status(401).json({ message: 'Unauthorized' });
@@ -112,30 +108,24 @@ module.exports = function () {
         })
     });
 
-    router.get('/d3', authorize(), (req, res) => {
-        const uid = req.user.id;
+    router.get('/d3', authorize([Role.user,Role.designer]), (req, res) => {
+        let uid = req.user.sub;
 
-        console.log(uid);
-
-        downloadController.getAllRefId(uid).then((res) => {
-            if(res!=null)
-                res.send(res);
+        vgenService.getAllRefId(uid).then((result) => {
+            if(result)
+                res.status(200).json({files : result});
             else
                 res.json({ message : "error"});
         })
-
-
     });
+
+    router.delete('/:id', authorize([Role.user,Role.designer]), (req, res, next) => {
+        let file_id = req.params.id;
+        let uid = req.user.sub
+        vgenService.delete(file_id,uid).then(() => {
+            res.json({ message: 'File deleted successfully' })
+        }).catch(next)
+    })
 
     return router;
 }
-
-/*
-1.client use web application to insert data and config
-2.when submit -> web application call POST api to Vgen to generate d3 file
-3.Vgen generate refId then return to api and store d3 file in DB
-4.the called POST return refId
-5.web application automatically redirect to visualization page and call GET api to get d3 html file
-6.web application display the page with d3 visualization
-7.user can also call GET api with refId to get d3 file to attach anywhere in their external web page
-*/

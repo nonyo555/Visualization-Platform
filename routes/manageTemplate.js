@@ -2,7 +2,8 @@ const authorize = require('../helper/authorize')
 const Role = require('../helper/role')
 const express = require('express');
 const router = express.Router();
-const templateService = require('../services/templateService')
+const templateService = require('../services/templateService');
+
 module.exports = function () {
     router.get('/', (req, res) => {
         res.status(200).send({
@@ -10,8 +11,7 @@ module.exports = function () {
         });
     })
 
-    router.post('/',authorize(Role.designer),async (req, res) => {
-        console.log(req.files)
+    router.post('/',authorize(Role.designer), async (req, res) => {
         let keys = Object.keys(req.files)
         let fileNameList =[]
         let fileTextList = []
@@ -23,14 +23,17 @@ module.exports = function () {
         console.log( fileNameList)
         let templateName = req.body.templateName
         let classFileName = req.body.classFileName
+        let uid = req.user.sub
         try{
-        await templateService.addTemplate(templateName,classFileName,fileNameList,fileTextList)
-        res.status(200).send({
-            message: 'Added'
+        await templateService.addTemplate(uid,templateName,classFileName,fileNameList,fileTextList)
+        res.status(200).json({
+            status: 'success',
+            templateName: templateName,
+            files: fileNameList
         })
         }
         catch(err){
-            res.status(400).json({ message : 'Error : Bad Request =>'+err})
+            res.status(400).json({ message : 'Error : Bad Request => '+err})
         }
     });
     
