@@ -9,8 +9,7 @@ module.exports = {
 }
 
 async function getAll(id) {
-    const user = await userdb.User.findByPk(id)
-    if (!user) throw 'User not found';
+    const user = await getUser(id)
 
     let result;
     switch(user.role){
@@ -24,6 +23,12 @@ async function getAll(id) {
             break;
     }
     return result;
+}
+
+async function getUser(id){
+    const user = await userdb.User.findByPk(id)
+    if (!user) throw 'User not found';
+    return user;
 }
 
 async function create(role, user, target, method){

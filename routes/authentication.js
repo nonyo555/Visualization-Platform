@@ -102,7 +102,7 @@ function getLog(req, res, next){
     let uid = req.params.id;
     logService.getAll(uid).then((result) => {
         res.json({result : result});
-    })
+    }).catch(next);
 }
 
 function createLog(role,uid,target,method) {
