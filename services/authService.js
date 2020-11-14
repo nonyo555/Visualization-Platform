@@ -2,6 +2,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('../models/user/user.db');
+const user_usagedb = require('../models/user_usage/user_usage.db')
 
 module.exports = {
     authenticate,
@@ -43,7 +44,19 @@ async function create(params) {
     }
 
     // save user
-    await db.User.create(params);
+    let user = await db.User.create(params);
+
+    //create user usage record
+    let uid = user.dataValues.id
+    createUser_usage(uid);
+}
+
+async function createUser_usage(uid){
+    await user_usagedb.user_usage.create({
+        uid : uid,
+        count : 0,
+        is_reachlimit : false
+    })
 }
 
 async function update(id, params, role) {
@@ -63,8 +76,6 @@ async function update(id, params, role) {
     if (params.password) {
         params.hash = await bcrypt.hash(params.password, 10);
     }
-
-    
 
     // copy params to user and save
     Object.assign(user, params);

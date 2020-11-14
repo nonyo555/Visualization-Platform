@@ -31,6 +31,7 @@ userdb.sequelize.sync()
 user_log.sequelize.sync()
 user_usage.sequelize.sync()
 
+//force drop and resync table
  /*db.sequelize.sync({ force: true }).then(() => {
    console.log("Drop and re-sync db.");
  });*/

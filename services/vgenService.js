@@ -1,12 +1,15 @@
 const filedb = require("../models/file/file.db");
+const user_usagedb = require('../models/user_usage/user_usage.db')
 const preconfigdb = require("../models/preconfig/preconfig.db")
 const templatedb = require("../models/template/template.db");
 const template = templatedb.template
 const fs = require("fs");
-const { ref } = require("joi");
-const { update } = require("./authService");
+
+//limit number of visualization generated / 1 user
+const limit = 10;
 
 module.exports = { 
+    checkLimit,
     create,
     Vgen, 
     generateRefId, 
@@ -62,6 +65,14 @@ function csvtojson(csvText){
   return data
 }
 
+async function checkLimit(uid){
+  //check visualization number limit before create
+  let user_usage =  await user_usagedb.user_usage.findOne({attributes : ['is_reachlimit'] ,  where : { uid : uid }})
+  let is_reachlimit = user_usage.dataValues.is_reachlimit
+
+  return is_reachlimit;
+}
+
 async function create(refId, uid){
   try {
       var file_id;
@@ -84,6 +95,7 @@ async function create(refId, uid){
                   file.data
               )
               file_id = file.dataValues.id;
+              updateUsage(uid)
           });
         return file_id;  
       }
@@ -91,8 +103,23 @@ async function create(refId, uid){
   } catch (error) {
       console.log(error);
   }
-
 };
+
+async function updateUsage(uid) {
+  var files_count = await filedb.file.count({ where : { user_id : uid , status : 'active'}})
+
+    console.log(files_count)
+
+    await user_usagedb.user_usage.update({
+      count : files_count,
+      is_reachlimit : files_count>=limit ? true : false
+    },
+    {
+      where : {
+        uid : uid
+      }
+    })
+}
 
 async function savePreconfig(file_id,vname,data,config){
   try{
@@ -145,6 +172,8 @@ async function _delete(id,uid) {
     await file.destroy();
   else
     throw 'Unauthorized : Cannot delete other user\'s file'
+
+  updateUsage(uid);
 }
 
 async function getFile(id) {
@@ -152,7 +181,6 @@ async function getFile(id) {
   if (!file) throw 'File not found';
   return file;
 }
-
 
 async function Vgen(templateName){
     var result = await template.findOne({
