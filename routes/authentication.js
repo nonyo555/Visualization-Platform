@@ -4,7 +4,8 @@ const Joi = require('joi');
 const validateRequest = require('../helper/validate-request');
 const authorize = require('../helper/authorize')
 const authService = require('../services/authService');
-const Role = require('../helper/role')
+const logService = require('../services/logService')
+const Role = require('../helper/role');
 
 module.exports = function () {
     router.post('/authenticate', authenticateSchema, authenticate);
@@ -80,12 +81,23 @@ function updateSchema(req, res, next) {
 
 function update(req, res, next) {
     authService.update(req.params.id, req.body, req.user.role)
-        .then(user => res.json(user))
+        .then(user => {
+            createLog(req.user.role, req.user.sub, req.params.id, 'update');
+            res.json(user)
+        })
         .catch(next);
 }
 
 function _delete(req, res, next) {
     authService.delete(req.params.id)
-        .then(() => res.json({ message: 'User deleted successfully' }))
+        .then(() => {
+            createLog(req.user.role, req.user.sub, req.params.id, 'delete');
+            res.json({ message: 'User deleted successfully' })
+        })
         .catch(next);
+}
+
+function createLog(role,uid,target,method) {
+    logService.create(role, uid, target, method)
+        .then((result) => console.log(result));
 }

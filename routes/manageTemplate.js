@@ -3,6 +3,7 @@ const Role = require('../helper/role')
 const express = require('express');
 const router = express.Router();
 const templateService = require('../services/templateService');
+const logService = require('../services/logService')
 
 module.exports = function () {
     router.get('/', (req, res) => {
@@ -25,12 +26,14 @@ module.exports = function () {
         let classFileName = req.body.classFileName
         let uid = req.user.sub
         try{
-        await templateService.addTemplate(uid,templateName,classFileName,fileNameList,fileTextList)
-        res.status(200).json({
-            status: 'success',
-            templateName: templateName,
-            files: fileNameList
-        })
+            templateService.addTemplate(uid,templateName,classFileName,fileNameList,fileTextList).then((template_id) => {
+                createLog(req.user.role, req.user.sub, template_id, 'create')
+                res.status(200).json({
+                    status: 'success',
+                    templateName: templateName,
+                    files: fileNameList
+                })
+            })
         }
         catch(err){
             res.status(400).json({ message : 'Error : Bad Request => '+err})
@@ -47,19 +50,28 @@ module.exports = function () {
         })
         console.log( fileNameList)
         let templateName = req.body.templateName
-        templateService.updateTemplate(templateName,fileNameList,fileTextList)
+        templateService.updateTemplate(templateName,fileNameList,fileTextList).then((template_id) => {
+            createLog(req.user.role, req.user.sub, template_id, 'update');
+        })
         res.status(200).send({
-            message: 'Updated'
+            message: 'Updated template'
         })
     });
 
     router.delete('/',authorize(Role.designer),(req, res) => {
         let templateName = req.body.templateName
-        templateService.deleteTemplate(templateName)
-        res.status(200).send({
-            message: 'Deleted'
+        templateService.deleteTemplate(templateName).then((template_id) => {
+            createLog(req.user.role, req.user.sub, template_id, 'delete');
+            res.status(200).send({
+                message: 'Deleted template'
+            })
         })
     });   
 
     return router
+}
+
+function createLog(role,uid,target,method) {
+    logService.create(role, uid, target, method)
+        .then((result) => console.log(result));
 }

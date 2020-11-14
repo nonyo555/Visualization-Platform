@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const vgenService = require('../services/vgenService');
+const logService = require('../services/logService')
 const authorize = require('../helper/authorize')
 var fs = require('fs');
 const Role = require('../helper/role');
@@ -50,10 +51,14 @@ module.exports = function () {
                     console.log("refId : " + refId);
                     console.log(req.user)
                     try {
+                        //check file limit before create
                         vgenService.checkLimit(req.user.sub).then((is_reachlimit) => {
                             if(!is_reachlimit){
-                                console.log("ok")
+                                //create record in db
                                 vgenService.create(refId,req.user.sub).then((file_id) => {
+                                    //create log
+                                    createLog(req.user.role, req.user.sub, file_id, 'create');
+                                    //save pre-generate config
                                     vgenService.savePreconfig(file_id,vname,JSON.stringify(data),JSON.stringify(config)).then(() => {
                                         res.status(200).json({refId : refId, visualization_name : vname})
                                     })
@@ -108,8 +113,10 @@ module.exports = function () {
         let uid = req.user.sub;
         
         vgenService.getFiles(refId, uid).then((resfile) => {
-            if(resfile)
+            if(resfile){
+                logService.create(req.user.role, req.user.sub, resfile.dataValues.id, 'get')
                 res.send(resfile.data.toString('utf8'))
+            } 
             else res.status(401).json({ message: 'Unauthorized' });
         }).catch((err) => {
             console.log(err);
@@ -132,9 +139,15 @@ module.exports = function () {
         let file_id = req.params.id;
         let uid = req.user.sub
         vgenService.delete(file_id,uid).then(() => {
+            createLog(req.user.role, req.user.sub, file_id, 'delete');
             res.json({ message: 'File deleted successfully' })
         }).catch(next)
     })
 
     return router;
+}
+
+function createLog(role,uid,target,method) {
+    logService.create(role, uid, target, method)
+        .then((result) => console.log(result));
 }

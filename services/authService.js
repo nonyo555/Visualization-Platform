@@ -59,6 +59,10 @@ async function createUser_usage(uid){
     })
 }
 
+async function deleteUser_usage(uid){
+    await user_usagedb.user_usage.destroy({ where : { uid : uid }})
+}
+
 async function update(id, params, role) {
     const user = await getUser(id);
 
@@ -92,6 +96,8 @@ async function _delete(id) {
         throw 'Cannot delete superadmin';
 
     await user.destroy();
+    
+    deleteUser_usage(id)
 }
 
 // helper functions
