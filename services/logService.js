@@ -1,9 +1,29 @@
+const userdb = require('../models/user/user.db')
 const user_logdb = require('../models/user_log/user_log.db');
 const admin_logdb = require('../models/admin_log/admin_log.db');
 const designer_logdb = require('../models/designer_log/designer_log.db');
 
 module.exports = {
+    getAll,
     create
+}
+
+async function getAll(id) {
+    const user = await userdb.User.findByPk(id)
+    if (!user) throw 'User not found';
+
+    let result;
+    switch(user.role){
+        case 'user' : result = await user_logdb.user_log.findAll({where : { uid : id }})
+            break;
+        case 'admin' : result = await admin_logdb.admin_log.findAll({where : { uid : id }})
+            break;
+        case 'designer' : result = await designer_logdb.designer_log.findAll({where : { uid : id }})
+            break;
+        case 'superadmin' : result = await admin_logdb.admin_log.findAll({where : { uid : id }})
+            break;
+    }
+    return result;
 }
 
 async function create(role, user, target, method){

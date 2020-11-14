@@ -13,6 +13,7 @@ module.exports = function () {
     router.get('/', authorize([Role.superadmin, Role.admin]), getAll);
     router.get('/current',  authorize(), getCurrent);
     router.get('/:id',  authorize([Role.superadmin, Role.admin]), getById);
+    router.get('/log/:id', authorize([Role.admin, Role.superadmin]), getLog)
     router.put('/:id',  authorize([Role.superadmin, Role.admin]), updateSchema, update);
     router.delete('/:id',  authorize([Role.superadmin, Role.admin]), _delete);
 
@@ -97,7 +98,15 @@ function _delete(req, res, next) {
         .catch(next);
 }
 
+function getLog(req, res, next){
+    let uid = req.params.id;
+    logService.getAll(uid).then((result) => {
+        res.json({result : result});
+    })
+}
+
 function createLog(role,uid,target,method) {
     logService.create(role, uid, target, method)
         .then((result) => console.log(result));
 }
+
