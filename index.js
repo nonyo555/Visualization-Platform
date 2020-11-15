@@ -20,6 +20,8 @@ const authentication = require('./routes/authentication')(io);
 const vgenerate = require('./routes/vgenerate')(io);
 const manageTemplate = require('./routes/manageTemplate')(io);
 
+const errorHandler = require('./helper/error-handler');
+
 global.__basedir = __dirname;
 
 admin_logdb.sequelize.sync()
@@ -51,5 +53,7 @@ app.get('/', (req, res) => {
         message: 'Visualization Platform routes'
       })
 })
+
+app.use(errorHandler);
 
 server.listen(80);
