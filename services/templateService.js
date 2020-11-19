@@ -37,7 +37,7 @@ async function addTemplate(uid,templateName,classFileName,fileNameList,fileTextL
             'uid': uid,
             'TemplateName': templateName,
             'Path': '../charts/'+templateName+'/'+classFileName,
-            'status': 'inactive'
+            'status': 'active'
         }).then((template) => {
             template_id = template.dataValues.id
         })

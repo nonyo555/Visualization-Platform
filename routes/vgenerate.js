@@ -5,6 +5,7 @@ const logService = require('../services/logService')
 const authorize = require('../helper/authorize')
 var fs = require('fs');
 const Role = require('../helper/role');
+const authorizeFromQueryStr = require('../helper/authorizeFromQueryStr');
 
 module.exports = function () {
     router.get('/', (req, res) => {
@@ -123,6 +124,23 @@ module.exports = function () {
             res.status(404).json({ message: 'Not Found'});
         })
     });
+
+    router.get('/d3/ppt/:token',authorizeFromQueryStr([Role.user,Role.designer]), (req, res) => {
+        console.log(req.user);
+        let refId = req.query.refId;
+        let uid = req.user.sub;
+
+        vgenService.getFiles(refId, uid).then((resfile) => {
+            if(resfile){
+                logService.create(req.user.role, req.user.sub, resfile.dataValues.id, 'get')
+                res.send(resfile.data.toString('utf8'))
+            } 
+            else res.status(401).json({ message: 'Unauthorized' });
+        }).catch((err) => {
+            console.log(err);
+            res.status(404).json({ message: 'Not Found'});
+        })
+    })
 
     router.get('/d3', authorize([Role.user,Role.designer]), (req, res) => {
         let uid = req.user.sub;

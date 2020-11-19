@@ -5,5 +5,5 @@ module.exports = (sequelize, DataTypes) => {
         Path: { type: DataTypes.STRING, allowNull: false },
         status: { type: DataTypes.ENUM('active','inactive'), allowNull: false }
     };
-    return sequelize.define('templatepath', attributes);
+    return sequelize.define('template', attributes);
 }
