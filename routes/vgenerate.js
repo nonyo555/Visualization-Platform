@@ -16,15 +16,24 @@ module.exports = function () {
 
     router.post('/:vname', authorize([Role.user,Role.designer]), async (req, res) => {
         var vname = req.params.vname;
-        var config = JSON.parse(req.body.config);
+        if(req.body.config != undefined){
+            var config = JSON.parse(req.body.config);
+        }
         //console.log(Object.keys(req.files).name)
         
         if(req.files != undefined){
             var data  = []
             Object.keys(req.files).forEach(key=>{
                 if (req.files[key].mimetype == 'text/csv' || req.files[key].mimetype == 'application/vnd.ms-excel'){
-                    data= vgenService.csvtojson(req.files[key].data.toString())
-                    console.log(data)
+                    if(key  == 'dataset'){
+                        data= vgenService.csvtojson(req.files[key].data.toString())
+                        console.log(data)
+                    }
+                    else if (key == 'config'){
+                        config = vgenService.csvConfig(req.files[key].data.toString())
+                        console.log(config)
+                    }
+                    
                 }
             })
         }
@@ -137,7 +146,7 @@ module.exports = function () {
             } 
             else res.status(401).json({ message: 'Unauthorized' });
         }).catch((err) => {
-            console.log(err);
+           // console.log(err);
             res.status(404).json({ message: 'Not Found'});
         })
     })

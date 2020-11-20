@@ -84,38 +84,82 @@ class ThaiPolygon{
     }
     setJsontoJsonDataset(jsonList,config){
         let provinceColumn =    config.province
-        let datsetsLabelColumn = config.label
-        let dataColumn = config.data
-        jsonList.forEach(ajson =>{
-            let province =  ajson[provinceColumn]
-            if (Object.keys(this.json).includes(province)){
-                var haveDataset = false;
-                this.json[province].forEach(ele =>{
-                    if (ele['label'] == ajson[datsetsLabelColumn]){
-                        ele['data'].push(ajson[dataColumn])
-                        haveDataset =true
-                        return
+        let typeColumn = config.type
+        let labelColumn = config.label
+        if (Object.keys(config).includes('data')){
+            let dataColumn = config.data
+            jsonList.forEach(ajson =>{
+                let province =  ajson[provinceColumn]
+                let label =  ajson[labelColumn]
+                if (Object.keys(this.json).includes(province)){
+                    var haveDataset = false;
+                    this.json[province].forEach(ele =>{
+                        if (ele['label'] == ajson[typeColumn]){
+                            let index = this.label.indexOf(label)
+                            ele['data'][index] += parseInt(ajson[dataColumn])
+                            haveDataset =true
+                            return
+                        }
+                    })
+                    if(haveDataset == false){
+                        let startData = new Array(this.label.length).fill(0)
+                        let index = this.label.indexOf(label)
+                        startData[index] = parseInt(ajson[dataColumn])
+                        this.json[province].push({'label':ajson[typeColumn] ,'data':startData})
                     }
-                })
-                if(haveDataset == false){
-                    this.json[province].push({'label':ajson[datsetsLabelColumn] ,'data':[ajson[dataColumn]]})
                 }
-            }
-            else{
-                this.json[province] = [{'label':ajson[datsetsLabelColumn] ,'data':[ajson[dataColumn]]}]
-            }
-        })
+                else{
+                    let startData = new Array(this.label.length).fill(0)
+                    let index = this.label.indexOf(label)
+                    startData[index] = parseInt(ajson[dataColumn])
+                    this.json[province] = [{'label':ajson[typeColumn] ,'data':  startData}]
+                }
+            })
+         }else{
+            jsonList.forEach(ajson =>{
+                let province =  ajson[provinceColumn]
+                let label =  ajson[labelColumn]
+                if (Object.keys(this.json).includes(province)){
+                    var haveDataset = false;
+                    this.json[province].forEach(ele =>{
+                        if (ele['label'] == ajson[typeColumn]){
+                            let index = this.label.indexOf(label)
+                            ele['data'][index] +=1
+                            haveDataset =true
+                            return
+                        }
+                    })
+                    if(haveDataset == false){
+                        let startData = new Array(this.label.length).fill(0)
+                        let index = this.label.indexOf(label)
+                        startData[index] = 1
+                        this.json[province].push({'label':ajson[typeColumn] ,'data':startData})
+                    }
+                }
+                else{
+                    let startData = new Array(this.label.length).fill(0)
+                    let index = this.label.indexOf(label)
+                    startData[index] = 1
+                    this.json[province] = [{'label':ajson[typeColumn] ,'data':  startData}]
+                }
+            })
+         }
         //console.log(this.json['Nan'][1].data)
     }
-    setAttr(data,config){
+    async setAttr(data,config){
         var keys = Object.keys(config)
         //if (key.includes = )
         if (keys.includes('width') &&keys.includes('height') ){
             this.setWidth(config.width)
             this.setHeight(config.height)
         }
-        this.setLabel(config.templatelabel)
+        await this.setLabel(data,config.label);
         this.setJsontoJsonDataset(data,config);
+        if(keys.includes('color')){
+        Object.keys(config.color).forEach(key=>{
+            this.changeDatasetColor(key,config.color[key])
+        })
+        }
     }
     getJson(){
         return this.json
@@ -123,9 +167,15 @@ class ThaiPolygon{
     getLabel(){
         return this.label 
     }
-    setLabel(label){
+    setLabel(data,labelColumn){
+        let label =[]
+        data.forEach(ajson=>{
+            if(!label.includes(ajson[labelColumn])){
+                label.push(ajson[labelColumn])
+            }
+        })
         if(Array.isArray(label)){
-            this.label=label
+            this.label=label.sort()
         }
         else{throw 'Label is not Array'}
     }

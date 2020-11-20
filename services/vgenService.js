@@ -17,7 +17,8 @@ module.exports = {
     savePreconfig,
     getFiles,
     getAllRefId,
-    delete: _delete
+    delete: _delete,
+    csvConfig
 };
     
 async function isRefIdUnique(refId) {
@@ -62,6 +63,23 @@ function csvtojson(csvText){
       data.push(json)
       }
   }
+  return data
+}
+
+function csvConfig(csvText){
+  let data ={}
+  let color = {}  
+  let rows = csvText.split('\n');
+  rows.forEach(row=>{
+    let col = row.split('\r')[0].split(',')
+    if (col[0].toLowerCase()== 'column'){
+      data[col[1]] = col[2]
+    }
+    else if(col[0].toLowerCase()== 'color'){
+      color[col[1]] = col[2]
+    }
+  })
+  data['color'] = color
   return data
 }
 
