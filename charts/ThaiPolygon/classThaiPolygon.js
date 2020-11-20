@@ -87,16 +87,22 @@ class ThaiPolygon{
         let typeColumn = config.type
         let labelColumn = config.label
         if (Object.keys(config).includes('data')){
-            let dataColumn = config.data
-            jsonList.forEach(ajson =>{
+            var dataColumn = config.data
+        }
+        jsonList.forEach(ajson =>{
                 let province =  ajson[provinceColumn]
                 let label =  ajson[labelColumn]
                 if (Object.keys(this.json).includes(province)){
-                    var haveDataset = false;
+                    let haveDataset = false;
                     this.json[province].forEach(ele =>{
                         if (ele['label'] == ajson[typeColumn]){
                             let index = this.label.indexOf(label)
-                            ele['data'][index] += parseInt(ajson[dataColumn])
+                            if (dataColumn != undefined){
+                                ele['data'][index] += parseInt(ajson[dataColumn])
+                            }
+                            else{
+                                ele['data'][index] += 1
+                            }
                             haveDataset =true
                             return
                         }
@@ -104,46 +110,28 @@ class ThaiPolygon{
                     if(haveDataset == false){
                         let startData = new Array(this.label.length).fill(0)
                         let index = this.label.indexOf(label)
+                        if (dataColumn != undefined){
+                            startData[index] = parseInt(ajson[dataColumn])
+                        }
+                        else{
+                            startData[index] = 1
+                        }
+                        this.json[province].push({'label':ajson[typeColumn] ,'data':startData})
+                    }
+                }
+                else{
+                    let startData = new Array(this.label.length).fill(0)
+                    let index = this.label.indexOf(label)
+                    if (dataColumn != undefined){
                         startData[index] = parseInt(ajson[dataColumn])
-                        this.json[province].push({'label':ajson[typeColumn] ,'data':startData})
                     }
-                }
-                else{
-                    let startData = new Array(this.label.length).fill(0)
-                    let index = this.label.indexOf(label)
-                    startData[index] = parseInt(ajson[dataColumn])
-                    this.json[province] = [{'label':ajson[typeColumn] ,'data':  startData}]
-                }
-            })
-         }else{
-            jsonList.forEach(ajson =>{
-                let province =  ajson[provinceColumn]
-                let label =  ajson[labelColumn]
-                if (Object.keys(this.json).includes(province)){
-                    var haveDataset = false;
-                    this.json[province].forEach(ele =>{
-                        if (ele['label'] == ajson[typeColumn]){
-                            let index = this.label.indexOf(label)
-                            ele['data'][index] +=1
-                            haveDataset =true
-                            return
-                        }
-                    })
-                    if(haveDataset == false){
-                        let startData = new Array(this.label.length).fill(0)
-                        let index = this.label.indexOf(label)
+                    else{
                         startData[index] = 1
-                        this.json[province].push({'label':ajson[typeColumn] ,'data':startData})
                     }
-                }
-                else{
-                    let startData = new Array(this.label.length).fill(0)
-                    let index = this.label.indexOf(label)
-                    startData[index] = 1
                     this.json[province] = [{'label':ajson[typeColumn] ,'data':  startData}]
                 }
             })
-         }
+         
         //console.log(this.json['Nan'][1].data)
     }
     async setAttr(data,config){
