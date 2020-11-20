@@ -16,27 +16,31 @@ module.exports = function () {
         let keys = Object.keys(req.files)
         let fileNameList =[]
         let fileTextList = []
-        keys.forEach(key=>{
-            console.log("keys : ",key)
-            fileNameList.push(req.files[key].name)
-            fileTextList.push(req.files[key].data.toString())
-        })
-        console.log( fileNameList)
-        let templateName = req.body.templateName
-        let classFileName = req.body.classFileName
-        let uid = req.user.sub
-        try{
-            templateService.addTemplate(uid,templateName,classFileName,fileNameList,fileTextList).then((template_id) => {
-                createLog(req.user.role, req.user.sub, template_id, 'create')
-                res.status(200).json({
-                    status: 'success',
-                    templateName: templateName,
-                    files: fileNameList
-                })
+        if (keys.includes("class")){
+            keys.forEach(key=>{
+                console.log("keys : ",key)
+                fileNameList.push(req.files[key].name)
+                fileTextList.push(req.files[key].data.toString())
             })
+            let templateName = req.body.templateName
+            let classFileName = req.files.class.name
+            let uid = req.user.sub
+            try{
+               await templateService.addTemplate(uid,templateName,classFileName,fileNameList,fileTextList).then((template_id) => {
+                    createLog(req.user.role, req.user.sub, template_id, 'create')
+                    res.status(200).json({
+                        status: 'success',
+                        templateName: templateName,
+                        files: fileNameList
+                    })
+                })
+            }
+            catch(err){
+                res.status(400).json({ message : 'Error : Bad Request => '+err})
+            }
         }
-        catch(err){
-            res.status(400).json({ message : 'Error : Bad Request => '+err})
+        else {
+            res.status(400).json({ message : 'Error : Bad Request => Request a class file'})
         }
     });
     
