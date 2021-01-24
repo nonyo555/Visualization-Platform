@@ -2,6 +2,7 @@ const express = require('express')
 const path = require('path')
 const app = express()
 const Vgen = require('./vgenTest.js')
+const chord  = require('./chords/classChord')
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname + '/test.htm'));
@@ -49,8 +50,10 @@ app.get('/thaiPolygon', (req, res) => {
   res.send(thaipoly.generateHTML())
 })
 
-
-
+app.get('/chord', (req, res) => {
+  let  test  = chord.object()
+  res.send(test.generateHTML());
+})
 app.get('/thai', (req, res) => {
   res.sendFile(path.join(__dirname + '/thailandPolygon.js'));
 })
