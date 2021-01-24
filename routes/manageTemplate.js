@@ -12,6 +12,12 @@ module.exports = function () {
         });
     })
 
+    router.get('/getAll', (req,res)=>{
+        templateService.getAll().then((result) => {
+            res.status(200).json(result);
+        })
+    })
+
     router.post('/',authorize(Role.designer), async (req, res) => {
         let keys = Object.keys(req.files)
         let fileNameList =[]
