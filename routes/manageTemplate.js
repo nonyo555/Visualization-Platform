@@ -12,7 +12,7 @@ module.exports = function () {
         });
     })
 
-    router.get('/getAll', (req,res)=>{
+    router.get('/getAll',authorize([Role.designer,Role.user]), (req,res)=>{
         templateService.getAll().then((result) => {
             res.status(200).json(result);
         })

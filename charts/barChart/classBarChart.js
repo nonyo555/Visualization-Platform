@@ -26,7 +26,7 @@ class BarChart {
     setAttr(data,config){
         var keys = Object.keys(config)
         //if (key.includes = )
-        if (keys.includes('width') &&keys.includes('height') ){
+        if (keys.includes('width') && keys.includes('height') ){
             this.setWidth(config.width)
             this.setHeight(config.height)
         }

@@ -14,77 +14,78 @@ module.exports = function () {
         })
     });
 
-    router.post('/:vname', authorize([Role.user,Role.designer]), async (req, res) => {
+    router.post('/:vname', authorize([Role.user, Role.designer]), async (req, res) => {
         var vname = req.params.vname;
-        if(req.body.config != undefined){
-            var config = JSON.parse(req.body.config);
+        var data = [];
+        var config;
+
+        try{
+            //data and config as req.body
+            if (req.body.dataset && req.body.config ) { 
+                config = JSON.parse(req.body.config);
+                data = JSON.parse(req.body.dataset);
+            }
+            //data and config as req.files
+            else if (req.files) {
+                Object.keys(req.files).forEach(key => {
+                    if (req.files[key].mimetype == 'text/csv' || req.files[key].mimetype == 'application/vnd.ms-excel') { //csv file
+                        if (key == 'dataset') {
+                            data = vgenService.csvtojson(req.files[key].data.toString());
+                            
+                        }
+                        else if (key == 'config') {
+                            config = vgenService.csvConfig(req.files[key].data.toString());
+                        }
+                    }
+                    else if (req.files[key].mimetype == 'application/json') { //json file
+                        if (key == "dataset") {
+                            data = JSON.parse(req.files[key].data);
+                        }
+                        else if (key == "config") {
+                            config = JSON.parse(req.files[key].data);
+                        }
+                    }
+                        console.log("data : ",data);
+                        console.log("config : ",config);
+                })
+            }
+        } catch (err){
+            res.status(400).json({message : 'Error : Data format is Incorrect\n'+err})
         }
-        //console.log(Object.keys(req.files).name)
         
-        if(req.files != undefined){
-            var data  = []
-            Object.keys(req.files).forEach(key=>{
-                if (req.files[key].mimetype == 'text/csv' || req.files[key].mimetype == 'application/vnd.ms-excel'){
-                    if(key  == 'dataset'){
-                        data= vgenService.csvtojson(req.files[key].data.toString())
-                        console.log(data)
-                    }
-                    else if (key == 'config'){
-                        config = vgenService.csvConfig(req.files[key].data.toString())
-                        console.log(config)
-                    }
-                    
-                }
-            })
-        }
-        else {
-           try{ 
-                var data =JSON.parse(req.body.data)
-           }
-           catch{
-            res.status(400).json({ message : 'Error : Data format (JSON) is incorrect'})
-            return
-           }
-        }
         //console.log(req.user)
         // var data = [{pro:'Nan',label:'Hello',data:123},{pro:'Nan',label:'Hello',data:153},
         // {pro:'Nan',label:'Hello',data:143},{pro:'Bueng Kan',label:'Hello',data:233},{pro:'Bueng Kan',label:'Hello',data:523},{pro:'Bueng Kan',label:'Hello',data:323},
         // {pro:'Bangkok',label:'Hello',data:173},{pro:'Bangkok',label:'Hello',data:193},
         // {pro:'Bangkok',label:'Hello',data:133}];
         // console.log('vname : ', vname);
-        try{    
-                let visualization = await vgenService.Vgen(vname.toLowerCase());
-                await visualization.setAttr(data,config)
-                let html = visualization.generateHTML();
-                vgenService.generateRefId().then((refId) => {
-                    fs.writeFileSync('generated/' + refId + '.html', html, (error) => { console.log(error) });
-                    console.log("refId : " + refId);
-                    console.log(req.user)
-                    try {
-                        //check file limit before create
-                        vgenService.checkLimit(req.user.sub).then((is_reachlimit) => {
-                            if(!is_reachlimit){
-                                //create record in db
-                                vgenService.create(refId,req.user.sub).then((file_id) => {
-                                    //create log
-                                    createLog(req.user.role, req.user.sub, file_id, 'create');
-                                    //save pre-generate config
-                                    vgenService.savePreconfig(file_id,vname,JSON.stringify(data),JSON.stringify(config)).then(() => {
-                                        res.status(200).json({refId : refId, visualization_name : vname})
-                                    })
+        try {
+            let visualization = await vgenService.Vgen(vname.toLowerCase());
+            await visualization.setAttr(data, config)
+            let html = visualization.generateHTML();
+            vgenService.generateRefId().then((refId) => {
+                fs.writeFileSync('generated/' + refId + '.html', html, (error) => { console.log(error) });
+                //check file limit before create
+                vgenService.checkLimit(req.user.sub).then((is_reachlimit) => {
+                    if (!is_reachlimit) {
+                        //create record in db
+                        vgenService.create(refId, req.user.sub, vname).then(file_id => {
+                            if(file_id){
+                                //create log
+                                createLog(req.user.role, req.user.sub, file_id, 'create');
+                                //save pre-generate config
+                                vgenService.savePreconfig(file_id, vname, JSON.stringify(data), JSON.stringify(config)).then(() => {
+                                    res.status(200).json({ refId: refId, visualization_name: vname })
                                 })
                             }
-                            else
-                                res.json({ message : 'Maximum number of visualization generated reached, please delete some before generate new visualization'})
-                            })
-                    } catch (err) {
-                        console.log(err);
+                        })
                     }
+                    else res.json({ message: 'Maximum number of visualization generated reached, Please delete some before generate new visualization' })
                 })
+            })
         }
-        catch(err) {
-            //console.log(err)
-            res.status(400).json({ message : 'Error : Bad Request '+err})
+        catch (err) {
+            res.status(400).json({ message: 'Error : ' + err })
         }
         /*
                 scatter.generate(config).then((refId) => {
@@ -118,54 +119,55 @@ module.exports = function () {
         */
     });
 
-    router.get('/d3/:refId', authorize([Role.user,Role.designer]), (req, res) => {
-        let refId = req.params.refId;
+    router.get('/d3', authorize([Role.user, Role.designer]), (req, res) => {
         let uid = req.user.sub;
-        
-        vgenService.getFiles(refId, uid).then((resfile) => {
-            if(resfile){
-                logService.create(req.user.role, req.user.sub, resfile.dataValues.id, 'get')
-                res.send(resfile.data.toString('utf8'))
-            } 
-            else res.status(401).json({ message: 'Unauthorized' });
-        }).catch((err) => {
-            console.log(err);
-            res.status(404).json({ message: 'Not Found'});
+
+        vgenService.getAllRefId(uid).then((result) => {
+            if (result)
+                res.status(200).json(result);
+            else
+                res.json({ message: "error" });
         })
     });
 
-    router.get('/d3/ppt/:token',authorizeFromQueryStr([Role.user,Role.designer]), (req, res) => {
+    router.get('/d3/:refId', authorize([Role.user, Role.designer]), (req, res) => {
+        let refId = req.params.refId;
+        let uid = req.user.sub;
+
+        vgenService.getFiles(refId, uid).then((resfile) => {
+            if (resfile) {
+                logService.create(req.user.role, req.user.sub, resfile.dataValues.id, 'get')
+                res.send(resfile.data.toString('utf8'))
+            }
+            else res.status(401).json({ message: 'Unauthorized' });
+        }).catch((err) => {
+            console.log(err);
+            res.status(404).json({ message: 'Not Found' });
+        })
+    });
+
+    router.get('/d3/ppt/:token', authorizeFromQueryStr([Role.user, Role.designer]), (req, res) => {
         console.log(req.user);
         let refId = req.query.refId;
         let uid = req.user.sub;
 
         vgenService.getFiles(refId, uid).then((resfile) => {
-            if(resfile){
+            if (resfile) {
                 logService.create(req.user.role, req.user.sub, resfile.dataValues.id, 'get')
                 res.send(resfile.data.toString('utf8'))
-            } 
+            }
             else res.status(401).json({ message: 'Unauthorized' });
         }).catch((err) => {
-           // console.log(err);
-            res.status(404).json({ message: 'Not Found'});
+            // console.log(err);
+            res.status(404).json({ message: 'Not Found' });
         })
     })
 
-    router.get('/d3', authorize([Role.user,Role.designer]), (req, res) => {
-        let uid = req.user.sub;
-
-        vgenService.getAllRefId(uid).then((result) => {
-            if(result)
-                res.status(200).json({files : result});
-            else
-                res.json({ message : "error"});
-        })
-    });
-
-    router.delete('/:id', authorize([Role.user,Role.designer]), (req, res, next) => {
+    
+    router.delete('/:id', authorize([Role.user, Role.designer]), (req, res, next) => {
         let file_id = req.params.id;
         let uid = req.user.sub
-        vgenService.delete(file_id,uid).then(() => {
+        vgenService.delete(file_id, uid).then(() => {
             createLog(req.user.role, req.user.sub, file_id, 'delete');
             res.json({ message: 'File deleted successfully' })
         }).catch(next)
@@ -174,7 +176,7 @@ module.exports = function () {
     return router;
 }
 
-function createLog(role,uid,target,method) {
+function createLog(role, uid, target, method) {
     logService.create(role, uid, target, method)
         .then((result) => console.log(result));
 }
