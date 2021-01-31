@@ -91,7 +91,7 @@ async function checkLimit(uid){
   return is_reachlimit;
 }
 
-async function create(refId, uid){
+async function create(refId, uid, vname){
   try {
       var file_id;
       const filename = refId + ".html";
@@ -105,13 +105,11 @@ async function create(refId, uid){
           await filedb.file.create({
               refId: refId,
               data: fs.readFileSync(path),
+              template: vname,
               user_id: uid,
               status: 'active'
           }).then((file) => {
-              fs.writeFileSync(
-                  __basedir + "\\resource\\tmp\\" + file.refId + ".html",
-                  file.data
-              )
+              console.log(file);
               file_id = file.dataValues.id;
               updateUsage(uid)
           });
@@ -125,8 +123,6 @@ async function create(refId, uid){
 
 async function updateUsage(uid) {
   var files_count = await filedb.file.count({ where : { user_id : uid , status : 'active'}})
-
-    console.log(files_count)
 
     await user_usagedb.user_usage.update({
       count : files_count,
@@ -176,7 +172,7 @@ async function getFiles(refId, uid){
 
 async function getAllRefId(uid){
   const result = await filedb.file.findAll({
-      attributes : ['refId','status'],
+      attributes : ['refId','template','status'],
       where : {
           user_id : uid
       }

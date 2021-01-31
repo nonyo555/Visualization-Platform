@@ -5,7 +5,8 @@ const template = templatedb.template;
 module.exports = {
     deleteTemplate,
     updateTemplate,
-    addTemplate
+    addTemplate,
+    getAll
 }
 
 async function deleteTemplate(templateName){
@@ -55,6 +56,13 @@ async function addTemplate(uid,templateName,classFileName,fileNameList,fileTextL
     }
 }
 
+async function getAll(){
+    const result = await template.findAll({
+        attributes : ['TemplateName','status'],
+    })
+    return result;
+  }
+  
 // var data = fs.readFileSync('test/path.json','utf8')
 // var ajson =JSON.parse(data)
 // var graphobject= {}
