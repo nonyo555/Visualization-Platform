@@ -18,6 +18,8 @@ module.exports = function () {
         var vname = req.params.vname;
         var data = [];
         var config;
+        var dataFile;
+        var configFile;
 
         try{
             //data and config as req.body
@@ -31,22 +33,27 @@ module.exports = function () {
                     if (req.files[key].mimetype == 'text/csv' || req.files[key].mimetype == 'application/vnd.ms-excel') { //csv file
                         if (key == 'dataset') {
                             data = vgenService.csvtojson(req.files[key].data.toString());
-                            
+                            dataFile = req.files[key];
                         }
                         else if (key == 'config') {
                             config = vgenService.csvConfig(req.files[key].data.toString());
+                            configFile = req.files[key];
                         }
                     }
                     else if (req.files[key].mimetype == 'application/json') { //json file
                         if (key == "dataset") {
                             data = JSON.parse(req.files[key].data);
+                            dataFile = req.files[key];
                         }
                         else if (key == "config") {
                             config = JSON.parse(req.files[key].data);
+                            configFile = req.files[key];
                         }
                     }
                         console.log("data : ",data);
                         console.log("config : ",config);
+                        console.log("dataFile : ",dataFile);
+                        console.log("configFile : ",configFile);
                 })
             }
         } catch (err){
@@ -74,7 +81,7 @@ module.exports = function () {
                                 //create log
                                 createLog(req.user.role, req.user.sub, file_id, 'create');
                                 //save pre-generate config
-                                vgenService.savePreconfig(file_id, vname, JSON.stringify(data), JSON.stringify(config)).then(() => {
+                                vgenService.savePreconfig(file_id, vname, dataFile.data, configFile.data, dataFile.name.toString(), configFile.name.toString()).then(() => {
                                     res.status(200).json({ refId: refId, visualization_name: vname })
                                 })
                             }
@@ -163,14 +170,43 @@ module.exports = function () {
         })
     })
 
-    
+    router.put('/:refId/:vname',authorize([Role.user,Role.admin]), (req,res) => {
+        var vname = req.params.vname;
+        var refId = req.params.refId;
+
+        console.log("vname : ", vname);
+        console.log("refId : ", refId);
+        console.log("files : " , req.files);
+        console.log("body : ", req.body);
+
+        res.json( {message : "ok"});
+    })
+
     router.delete('/:id', authorize([Role.user, Role.designer]), (req, res, next) => {
         let file_id = req.params.id;
-        let uid = req.user.sub
+        let uid = req.user.sub;
         vgenService.delete(file_id, uid).then(() => {
             createLog(req.user.role, req.user.sub, file_id, 'delete');
             res.json({ message: 'File deleted successfully' })
         }).catch(next)
+    })
+
+    router.get('/preconfig/:refId', authorize([Role.user, Role.designer]), (req, res) => {
+        let refId = req.params.refId;
+        let uid = req.user.sub;
+
+        vgenService.getPreconfig(refId,uid).then((result) => {
+            var buf = Buffer.from(result.data);
+            console.log(buf.toString());
+            console.log(result);
+            res.json({
+                vname : result.vname,
+                data : result.data.toString(),
+                config: result.config.toString(),
+                dataFileName : result.dataFileName,
+                configFileName : result.configFileName
+            });
+        })
     })
 
     return router;

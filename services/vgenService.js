@@ -4,9 +4,10 @@ const preconfigdb = require("../models/preconfig/preconfig.db")
 const templatedb = require("../models/template/template.db");
 const template = templatedb.template
 const fs = require("fs");
+const { type } = require("os");
 
 //limit number of visualization generated / 1 user
-const limit = 10;
+const limit = 20;
 
 module.exports = { 
     checkLimit,
@@ -15,6 +16,7 @@ module.exports = {
     generateRefId, 
     csvtojson,
     savePreconfig,
+    getPreconfig,
     getFiles,
     getAllRefId,
     delete: _delete,
@@ -135,7 +137,8 @@ async function updateUsage(uid) {
     })
 }
 
-async function savePreconfig(file_id,vname,data,config){
+async function savePreconfig(file_id,vname,data,config,dataFileName,configFileName){
+  console.log(dataFileName, typeof(dataFileName));
   try{
     const preconfig = await preconfigdb.preconfig.findOne({where : {file_id : file_id}})
 
@@ -150,13 +153,34 @@ async function savePreconfig(file_id,vname,data,config){
         file_id: file_id,
         vname: vname,
         data: data,
-        config: config
+        config: config,
+        dataFileName : dataFileName,
+        configFileName: configFileName
       }).then((result) => {
         console.log("result :" , result);
       })
     }
   } catch(error){
       console.log(error);
+  }
+}
+
+async function getPreconfig(refId,uid){
+  const file_id = await filedb.file.findOne({
+    attributes : ['id'],
+    where : {
+      user_id : uid,
+      refId : refId
+    }
+  })
+
+  if(file_id){
+    const result = await preconfigdb.preconfig.findOne({
+      where : {
+        file_id : file_id.dataValues.id, 
+      }
+    })
+    return result
   }
 }
 
@@ -172,7 +196,7 @@ async function getFiles(refId, uid){
 
 async function getAllRefId(uid){
   const result = await filedb.file.findAll({
-      attributes : ['refId','template','status'],
+      attributes : ['id','refId','template','status'],
       where : {
           user_id : uid
       }
