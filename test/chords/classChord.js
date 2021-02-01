@@ -30,7 +30,7 @@ class Chord{
         return this.test
     }
     generateHTML(){
-        console.log(this.test)
+       // console.log(this.test)
         var dom = `
         <head>
         <script src="https://d3js.org/d3.v5.js"></script>
@@ -41,9 +41,11 @@ class Chord{
 
     <body>
       <div style="position: relative;">
-      <svg id ='#divC'>
+      <svg id ='graph'>
       </svg>
       </div>
+      </div>
+      
     <script>
         var dataset = `+ JSON.stringify(this.test)+`
         `+chord.chords.toString()+`
