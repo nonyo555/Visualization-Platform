@@ -165,21 +165,84 @@ module.exports = function () {
             }
             else res.status(401).json({ message: 'Unauthorized' });
         }).catch((err) => {
-            // console.log(err);
+            console.log(err);
             res.status(404).json({ message: 'Not Found' });
         })
     })
 
-    router.put('/:refId/:vname',authorize([Role.user,Role.admin]), (req,res) => {
+    router.put('/:refId/:vname',authorize([Role.user,Role.admin]), async (req,res) => {
         var vname = req.params.vname;
         var refId = req.params.refId;
+        var data = [];
+        var config;
+        var dataFile;
+        var configFile;
 
-        console.log("vname : ", vname);
-        console.log("refId : ", refId);
-        console.log("files : " , req.files);
-        console.log("body : ", req.body);
-
-        res.json( {message : "ok"});
+        try{
+            //data and config as req.body
+            if (req.body.dataset && req.body.config ) { 
+                config = JSON.parse(req.body.config);
+                data = JSON.parse(req.body.dataset);
+            }
+            //data and config as req.files
+            else if (req.files) {
+                Object.keys(req.files).forEach(key => {
+                    if (req.files[key].mimetype == 'text/csv' || req.files[key].mimetype == 'application/vnd.ms-excel') { //csv file
+                        if (key == 'dataset') {
+                            data = vgenService.csvtojson(req.files[key].data.toString());
+                            dataFile = req.files[key];
+                        }
+                        else if (key == 'config') {
+                            config = vgenService.csvConfig(req.files[key].data.toString());
+                            configFile = req.files[key];
+                        }
+                    }
+                    else if (req.files[key].mimetype == 'application/json') { //json file
+                        if (key == "dataset") {
+                            data = JSON.parse(req.files[key].data);
+                            dataFile = req.files[key];
+                        }
+                        else if (key == "config") {
+                            config = JSON.parse(req.files[key].data);
+                            configFile = req.files[key];
+                        }
+                    }
+                        console.log("data : ",data);
+                        console.log("config : ",config);
+                        console.log("dataFile : ",dataFile);
+                        console.log("configFile : ",configFile);
+                })
+            }
+        } catch (err){
+            res.status(400).json({message : 'Error : Data format is Incorrect\n'+err})
+        }
+        
+        try {
+            let visualization = await vgenService.Vgen(vname.toLowerCase());
+            await visualization.setAttr(data, config)
+            let html = visualization.generateHTML();
+                fs.writeFileSync('generated/' + refId + '.html', html, (error) => { console.log(error) });
+                //check file limit before update
+                vgenService.checkLimit(req.user.sub).then((is_reachlimit) => {
+                    if (!is_reachlimit) {
+                        //update record in db
+                        vgenService.update(refId, vname).then(file_id => {
+                            if(file_id){
+                                //create log
+                                createLog(req.user.role, req.user.sub, file_id, 'update');
+                                //save pre-generate config
+                                vgenService.savePreconfig(file_id, vname, dataFile.data, configFile.data, dataFile.name.toString(), configFile.name.toString()).then(() => {
+                                    res.status(200).json({ refId: refId, visualization_name: vname })
+                                })
+                            }
+                        })
+                    }
+                    else res.json({ message: 'Maximum number of visualization generated reached, Please delete some before generate new visualization' })
+                })
+        }
+        catch (err) {
+            res.status(400).json({ message: 'Error : ' + err })
+        }
     })
 
     router.delete('/:id', authorize([Role.user, Role.designer]), (req, res, next) => {
@@ -196,9 +259,6 @@ module.exports = function () {
         let uid = req.user.sub;
 
         vgenService.getPreconfig(refId,uid).then((result) => {
-            var buf = Buffer.from(result.data);
-            console.log(buf.toString());
-            console.log(result);
             res.json({
                 vname : result.vname,
                 data : result.data.toString(),

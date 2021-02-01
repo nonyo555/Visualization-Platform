@@ -20,7 +20,8 @@ module.exports = {
     getFiles,
     getAllRefId,
     delete: _delete,
-    csvConfig
+    csvConfig,
+    update
 };
     
 async function isRefIdUnique(refId) {
@@ -118,6 +119,35 @@ async function create(refId, uid, vname){
         return file_id;  
       }
       
+  } catch (error) {
+      console.log(error);
+  }
+};
+
+async function update(refId, vname){
+  try {
+      const filename = refId + ".html";
+      const path = __basedir + "\\generated\\" + filename;
+      console.log(path);
+      //var text = await fs.readFileSync(__basedir + "\\generated\\" + filename)
+      //console.log (text.toString('hex'))
+
+      if (fs.existsSync(path)) {
+          console.log("file exist");
+          await filedb.file.update({
+              data: fs.readFileSync(path),
+              template: vname,
+          },
+          {
+            where: {
+              refId : refId
+            }
+          })
+
+          var file = await filedb.file.findOne({attributes : ['id']},{ where : {refId : refId}})
+          console.log(file.id);
+        return file.id;  
+      }
   } catch (error) {
       console.log(error);
   }
