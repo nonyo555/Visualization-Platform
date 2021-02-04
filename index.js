@@ -3,6 +3,7 @@ const cors = require('cors');
 const express = require('express');
 const bodyParser = require('body-parser')
 const fileUpload = require('express-fileupload');
+const path = require('path');
 const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
@@ -53,6 +54,9 @@ app.get('/', (req, res) => {
         message: 'Visualization Platform routes'
       })
 })
+
+var dir = path.join(__dirname, 'public');
+app.use(express.static(dir));
 
 app.use(errorHandler);
 

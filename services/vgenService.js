@@ -21,7 +21,8 @@ module.exports = {
     getAllRefId,
     delete: _delete,
     csvConfig,
-    update
+    update,
+    updateActivate
 };
     
 async function isRefIdUnique(refId) {
@@ -124,7 +125,7 @@ async function create(refId, uid, vname){
   }
 };
 
-async function update(refId, vname){
+async function update(refId, uid, vname){
   try {
       const filename = refId + ".html";
       const path = __basedir + "\\generated\\" + filename;
@@ -140,7 +141,8 @@ async function update(refId, vname){
           },
           {
             where: {
-              refId : refId
+              refId : refId,
+              user_id : uid
             }
           })
 
@@ -152,6 +154,20 @@ async function update(refId, vname){
       console.log(error);
   }
 };
+
+async function updateActivate(refId,status,uid){
+  var newStatus = status == "active" ? "inactive" : "active";
+  await filedb.file.update({
+    status: newStatus
+  },{
+    where : {
+      refId : refId,
+      user_id : uid
+    }
+  })
+
+  return newStatus;
+}
 
 async function updateUsage(uid) {
   var files_count = await filedb.file.count({ where : { user_id : uid , status : 'active'}})
@@ -174,7 +190,14 @@ async function savePreconfig(file_id,vname,data,config,dataFileName,configFileNa
 
     //already have a preconfig for this file
     if(preconfig){
-      let params = {file_id : file_id, vname: vname, data: data, config: config}
+      let params = {
+        file_id : file_id, 
+        vname: vname, 
+        data: data, 
+        config: config, 
+        dataFileName: dataFileName, 
+        configFileName: configFileName
+      }
       Object.assign(preconfig, params);
       await preconfig.save();
     } //new preconfig
@@ -218,7 +241,8 @@ async function getFiles(refId, uid){
   const result = await filedb.file.findOne({
       where : {
           refId : refId,
-          user_id : uid
+          user_id : uid,
+          status: "active"
       }
   })
   return result;

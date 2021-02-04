@@ -130,10 +130,11 @@ module.exports = function () {
         let uid = req.user.sub;
 
         vgenService.getAllRefId(uid).then((result) => {
-            if (result)
+            if (result){
                 res.status(200).json(result);
+            } 
             else
-                res.json({ message: "error" });
+                res.status(400).json({ message: "error" });
         })
     });
 
@@ -144,7 +145,7 @@ module.exports = function () {
         vgenService.getFiles(refId, uid).then((resfile) => {
             if (resfile) {
                 logService.create(req.user.role, req.user.sub, resfile.dataValues.id, 'get')
-                res.send(resfile.data.toString('utf8'))
+                res.status(200).send(resfile.data.toString('utf8'))
             }
             else res.status(401).json({ message: 'Unauthorized' });
         }).catch((err) => {
@@ -154,7 +155,6 @@ module.exports = function () {
     });
 
     router.get('/d3/ppt/:token', authorizeFromQueryStr([Role.user, Role.designer]), (req, res) => {
-        console.log(req.user);
         let refId = req.query.refId;
         let uid = req.user.sub;
 
@@ -170,13 +170,16 @@ module.exports = function () {
         })
     })
 
-    router.put('/:refId/:vname',authorize([Role.user,Role.admin]), async (req,res) => {
-        var vname = req.params.vname;
+    router.put('/:refId',authorize([Role.user,Role.admin]), async (req,res) => {
         var refId = req.params.refId;
+        var vname = req.body.vname;
         var data = [];
         var config;
         var dataFile;
         var configFile;
+
+        console.log("body : ",req.body);
+        console.log("files : ",req.files);
 
         try{
             //data and config as req.body
@@ -226,7 +229,7 @@ module.exports = function () {
                 vgenService.checkLimit(req.user.sub).then((is_reachlimit) => {
                     if (!is_reachlimit) {
                         //update record in db
-                        vgenService.update(refId, vname).then(file_id => {
+                        vgenService.update(refId, req.user.sub, vname).then(file_id => {
                             if(file_id){
                                 //create log
                                 createLog(req.user.role, req.user.sub, file_id, 'update');
@@ -237,7 +240,7 @@ module.exports = function () {
                             }
                         })
                     }
-                    else res.json({ message: 'Maximum number of visualization generated reached, Please delete some before generate new visualization' })
+                    else res.status(400).json({ message: 'Maximum number of visualization generated reached, Please delete some before generate new visualization' })
                 })
         }
         catch (err) {
@@ -245,12 +248,23 @@ module.exports = function () {
         }
     })
 
+    router.put('/activate/:refId', authorize([Role.user,Role.admin]), (req,res) => {
+        var status = req.body.status;
+        var refId = req.params.refId;
+        var uid = req.user.sub;
+
+        vgenService.updateActivate(refId,status,uid).then((result)=>{
+            createLog(req.user.role, req.user.sub, file_id, 'update');
+            res.status(200).json({ message : 'File Update successfully'});
+        })
+    })
+
     router.delete('/:id', authorize([Role.user, Role.designer]), (req, res, next) => {
         let file_id = req.params.id;
         let uid = req.user.sub;
         vgenService.delete(file_id, uid).then(() => {
             createLog(req.user.role, req.user.sub, file_id, 'delete');
-            res.json({ message: 'File deleted successfully' })
+            res.status(200).json({ message: 'File deleted successfully' })
         }).catch(next)
     })
 
@@ -259,12 +273,13 @@ module.exports = function () {
         let uid = req.user.sub;
 
         vgenService.getPreconfig(refId,uid).then((result) => {
-            res.json({
+            res.status(200).json({
                 vname : result.vname,
                 data : result.data.toString(),
                 config: result.config.toString(),
                 dataFileName : result.dataFileName,
-                configFileName : result.configFileName
+                configFileName : result.configFileName,
+                status: result.status
             });
         })
     })
