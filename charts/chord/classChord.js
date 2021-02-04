@@ -17,7 +17,6 @@ class Chord{
             this.width = parseInt(width) 
         }
     }
-
     setPathTitle(config){
         var keys = Object.keys(config)
         if(keys.includes('pathTitle0')){
@@ -48,15 +47,26 @@ class Chord{
             this.rightTitle = config.rigthTitle
         }
     }
+    setJsontoJsonDataset(jsonList,config){
+        var newJsonList = []
+        console.log(jsonList)
+        jsonList.forEach(json => {
+            let newJson = {}
+            newJson['source'] = json[config['source']]
+            newJson['target'] = json[config['target']]
+            newJson['value'] = json[config['value']]
+            newJsonList.push(newJson)
+        });
+        this.data = newJsonList
+    }
     setAttr(data,config){
         var keys = Object.keys(config)
-        console.log(config)
         //if (key.includes = )
         if (keys.includes('width') && keys.includes('height')) {
             this.setWidth(config.width)
             this.setHeight(config.height)
         }
-        this.data = data
+        this.setJsontoJsonDataset(data,config)
         this.setRibbonTitle(config)
         this.setPathTitle(config)
     }
@@ -99,7 +109,7 @@ class Chord{
     <script>
         var dataset = `+ JSON.stringify(this.data)+`
         `+chord.chords.toString()+`
-        chords(dataset,`+this.width.toString()+`,`+this.height.toString()+`,[`+ribbons+`],[`+paths+`])
+        chords(dataset,`+this.width.toString()+`,`+this.height.toString()+`,[`+ribbons+`],[`+paths+`],`+JSON.stringify(this.color)+`)
     </script>
     </body>
         `

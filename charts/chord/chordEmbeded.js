@@ -1,6 +1,6 @@
 const { drag } = require("d3");
 
-function chords(data,width,height,ribbons,paths){
+function chords(data,width,height,ribbons,paths,jsonColor){
     var innerRadius = Math.min(width, height) * 0.5 - 20
     var outerRadius = innerRadius + 6
     var names = Array.from(new Set(data.flatMap(d => [d.source, d.target])))
@@ -20,7 +20,12 @@ function chords(data,width,height,ribbons,paths){
         .radius(innerRadius - 0.5)
         .padAngle(1 / innerRadius)
 
+    console.log(names)
     var color = d3.scaleOrdinal(names, d3.schemeCategory10)
+    // Object.keys(jsonColor).forEach(key => {
+    //     color[names.indexOf(keu)] = jsonColor[key]
+    // });
+    // console.log(color)
 
     //div
     const div =d3.select('div')
@@ -265,8 +270,6 @@ drag = d3.drag()
             }
         }
       }
-  //console.log()    
-  console.log(demomatrix)
   let newchords = chord(demomatrix.slice())
   svg.select("path")
   .attr("fill", "none")
@@ -286,7 +289,6 @@ drag = d3.drag()
   .style("mix-blend-mode", "multiply")
   .append("title")
   .text(d => `${ribbons[0]} ${names[d.source.index]} ${ribbons[1]}${names[d.target.index]} ${ribbons[2]} ${d.source.value} ${ribbons[3]}`);
-  console.log(names)
  d3.selectAll('#colorline').selectAll('path').remove()
  d3.selectAll('#colorline').selectAll('title').remove()
 
