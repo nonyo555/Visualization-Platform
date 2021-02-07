@@ -254,7 +254,8 @@ module.exports = function () {
         var uid = req.user.sub;
 
         vgenService.updateActivate(refId,status,uid).then((result)=>{
-            createLog(req.user.role, req.user.sub, file_id, 'update');
+            console.log(result);
+            createLog(req.user.role, req.user.sub, result.id, 'update');
             res.status(200).json({ message : 'File Update successfully'});
         })
     })

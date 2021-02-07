@@ -1,0 +1,17 @@
+pro,label,data,type
+Bangkok,hello1,1,lola
+Mae Hong Son,hello2,3,lolb
+Nan,hello1,16,lolc
+Khon Kaen,hello3,14,lola
+Bangkok,hello2,6,lolb
+Mae Hong Son,hello3,20,lolc
+Nan,hello1,11,lola
+Khon Kaen,hello2,11,lolb
+Bangkok,hello1,19,lolc
+Mae Hong Son,hello3,15,lola
+Nan,hello1,7,lolb
+Khon Kaen,hello4,8,lolc
+Bangkok,hello1,13,lola
+Mae Hong Son,hello2,12,lolb
+Nan,hello1,15,lolc
+Khon Kaen,hello3,14,lola

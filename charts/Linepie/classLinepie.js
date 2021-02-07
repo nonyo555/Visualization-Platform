@@ -18,7 +18,7 @@ function checkColorSetting2(json) {
 function updatePieJson(json) {
     var pieJson = {};
     json.forEach(ajson => {
-        pieJson[ajson['label']] = ajson['data'].reduce((a, b) => a + b, 0)
+        pieJson[ajson['label']] = ajson['data'].reduce((a, b) => parseInt(a) + parseInt(b), 0)
     })
     return pieJson
 }
@@ -47,7 +47,7 @@ class LinePie {
             this.setWidth(config.width)
             this.setHeight(config.height)
         }
-        this.setLabel(config.templatelabel)
+        //this.setLabel(config.templatelabel)
         this.setJsontoJsonDataset(data, config);
     }
     getWidth() {

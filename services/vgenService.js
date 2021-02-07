@@ -166,7 +166,14 @@ async function updateActivate(refId,status,uid){
     }
   })
 
-  return newStatus;
+  var file = await filedb.file.findOne({
+    where : {
+      refId : refId,
+      user_id : uid
+    }
+  })
+
+  return file;
 }
 
 async function updateUsage(uid) {

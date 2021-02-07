@@ -45,18 +45,18 @@ app.use(fileUpload({
 app.use(cors())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
-app.use('/api/authentication', authentication);
-app.use('/api/vgenerate', vgenerate);
-app.use('/api/manageTemplate', manageTemplate);
+app.use('/node/api/authentication', authentication);
+app.use('/node/api/vgenerate', vgenerate);
+app.use('/node/api/manageTemplate', manageTemplate);
 
-app.get('/', (req, res) => {
+app.get('/node', (req, res) => {
     res.status(200).send({
         message: 'Visualization Platform routes'
       })
 })
 
 var dir = path.join(__dirname, 'public');
-app.use(express.static(dir));
+app.use('/node/static',express.static(dir));
 
 app.use(errorHandler);
 
