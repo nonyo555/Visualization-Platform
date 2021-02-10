@@ -5,10 +5,42 @@ const designer_logdb = require('../models/designer_log/designer_log.db');
 
 module.exports = {
     getAll,
+    getByRole,
+    getById,
     create
 }
 
-async function getAll(id) {
+async function getAll(){
+    let result;
+
+    let user_log = await user_logdb.user_log.findAll();
+    let admin_log = await admin_logdb.admin_log.findAll();
+    let designer_log = await designer_logdb.designer_log.findAll();
+
+    result = [...admin_log, ...user_log,  ...designer_log];
+    result.sort(function(a,b){
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      })
+
+    return result;
+}
+
+async function getByRole(role){
+    let result;
+
+    if(role == "admin"){
+        result = await admin_logdb.admin_log.findAll();
+    }
+    else if(role == "designer"){
+        result = await designer_logdb.designer_log.findAll();
+    }
+    else
+        result = await user_logdb.user_log.findAll();
+
+    return result;
+}
+
+async function getById(id) {
     const user = await getUser(id)
 
     let result;

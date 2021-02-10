@@ -170,7 +170,7 @@ module.exports = function () {
         })
     })
 
-    router.put('/:refId',authorize([Role.user,Role.admin]), async (req,res) => {
+    router.put('/:refId',authorize([Role.user,Role.designer]), async (req,res) => {
         var refId = req.params.refId;
         var vname = req.body.vname;
         var data = [];
@@ -248,7 +248,7 @@ module.exports = function () {
         }
     })
 
-    router.put('/activate/:refId', authorize([Role.user,Role.admin]), (req,res) => {
+    router.put('/activate/:refId', authorize([Role.user,Role.designer]), (req,res) => {
         var status = req.body.status;
         var refId = req.params.refId;
         var uid = req.user.sub;
