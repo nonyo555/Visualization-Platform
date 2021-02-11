@@ -3,6 +3,19 @@ const path = require('path')
 const app = express()
 const Vgen = require('./vgenTest.js')
 const chord  = require('./chords/classChord')
+const rtscatter = require('./scatter/scatterClass')
+
+const makeRandomData = (nb) => {
+  const res = [];
+  for (i = 0; i < nb; i++) {
+    res.push({
+      x: Math.random() * 100 | 0,
+      y: Math.random() * 100 | 0,
+      index: Math.random() * 8 | 0
+    });
+  }
+  return res;
+};
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname + '/test.htm'));
@@ -11,6 +24,13 @@ app.get('/zoomablesunburst.js', (req, res) => {
   res.sendFile(path.join(__dirname + '/zoomablesunburst.js'));
   //res.send(test.chart())
   //console.log(test.chart().style)
+})
+app.get('/random',(req,res)=>{
+  res.send( makeRandomData(104))
+})
+app.get('/rtscatter',(req,res)=>{
+  let scatter = rtscatter.object()
+  res.send(scatter.generateHTML())
 })
 app.get('/linepie', (req, res) => {
   var linepie = Vgen.Vgen.createLinepie()
