@@ -13,7 +13,9 @@ module.exports = function () {
     router.get('/', authorize([Role.superadmin, Role.admin]), getAll);
     router.get('/current',  authorize(), getCurrent);
     router.get('/:id',  authorize([Role.superadmin, Role.admin]), getById);
-    router.get('/log/:id', authorize([Role.admin, Role.superadmin]), getLog)
+    router.get('/log/all', authorize([Role.superadmin, Role.admin]), getAllLogs)
+    router.get('/log/:id', authorize([Role.superadmin, Role.admin]), getLogById)
+    router.get('/log/role/:role', authorize([Role.superadmin, Role.admin]), getLogByRole)
     router.put('/:id',  authorize([Role.superadmin, Role.admin]), updateSchema, update);
     router.delete('/:id',  authorize([Role.superadmin, Role.admin]), _delete);
 
@@ -98,10 +100,23 @@ function _delete(req, res, next) {
         .catch(next);
 }
 
-function getLog(req, res, next){
+function getAllLogs(req, res, next) {
+    logService.getAll().then((result) => {
+        res.status(200).json(result);
+    })
+}
+
+function getLogByRole(req, res, next){
+    let role = req.params.role;
+    logService.getByRole(role).then((result) => {
+        res.json(result);
+    }).catch(next);
+}
+
+function getLogById(req, res, next){
     let uid = req.params.id;
-    logService.getAll(uid).then((result) => {
-        res.json({result : result});
+    logService.getById(uid).then((result) => {
+        res.json(result);
     }).catch(next);
 }
 

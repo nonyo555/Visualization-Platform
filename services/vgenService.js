@@ -166,7 +166,14 @@ async function updateActivate(refId,status,uid){
     }
   })
 
-  return newStatus;
+  var file = await filedb.file.findOne({
+    where : {
+      refId : refId,
+      user_id : uid
+    }
+  })
+
+  return file;
 }
 
 async function updateUsage(uid) {
@@ -260,12 +267,13 @@ async function getAllRefId(uid){
 
 async function _delete(id,uid) {
   const file = await getFile(id);
-  if(file.user_id == uid)
+  if(file.user_id == uid){
     await file.destroy();
+    updateUsage(uid);
+  }
+    
   else
     throw 'Unauthorized : Cannot delete other user\'s file'
-
-  updateUsage(uid);
 }
 
 async function getFile(id) {
