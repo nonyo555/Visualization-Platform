@@ -29,6 +29,7 @@ class LinePie {
         this.label = ['a', 'b', 'c', 'd']
         this.lineJson = []
         this.pieJson = {}
+        this.percenMode = true
     }
     setWidth(width) {
         if (typeof width === 'number') {
@@ -41,6 +42,7 @@ class LinePie {
         }
     }
     setAttr(data, config) {
+        console.log(data)
         var keys = Object.keys(config)
         //if (key.includes = )
         if (keys.includes('width') && keys.includes('height')) {
@@ -61,6 +63,7 @@ class LinePie {
         let dataColumn = config.data
         jsonList.forEach(ajson => {
             var label = ajson[datsetsLabelColumn]
+            console.log(datsetsLabelColumn)
             var haveDataset = false;
             this.lineJson.forEach(ljson => {
                 if (ljson.label == label) {
@@ -75,7 +78,7 @@ class LinePie {
         })
         this.pieJson = updatePieJson(this.lineJson)
     }
-    generateHTML(percenMode = false) {
+    generateHTML() {
         this.lineJson = checkColorSetting2(this.lineJson)
         var label = []
         for (let i = 0; i < this.label.length; i++) {
@@ -98,10 +101,9 @@ class LinePie {
           </div>
         <script>
             `+ linepie.linepie.toString() + `
-            linepie([`+ label + `],` + JSON.stringify(this.lineJson) + `,` + JSON.stringify(this.pieJson) + `,` + this.width + `,` + this.height + `,` + percenMode + `)
+            linepie([`+ label + `],` + JSON.stringify(this.lineJson) + `,` + JSON.stringify(this.pieJson) + `,` + this.width + `,` + this.height + `,` +  this.percenMode + `)
         </script>
         </body>
-        
         `
         return dom
     }
