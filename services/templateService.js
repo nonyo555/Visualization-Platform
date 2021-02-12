@@ -6,26 +6,22 @@ module.exports = {
     deleteTemplate,
     updateTemplate,
     addTemplate,
-    getAll
+    getAll,
+    getById
 }
 
-async function deleteTemplate(templateName){
-    const template_tmp = await template.findOne({ where : {TemplateName : templateName}})
-    let template_id = template_tmp.dataValues.id;
-    await template.destroy({
-        where : {
-            'TemplateName' : templateName
-        }
-    })
-    return template_id;
+async function deleteTemplate(id){
+    const template = await getById(id)
+    await template.destroy();
+    return id;
 }
 
 async function updateTemplate(templateName,fileNameList,fileTextList){
     for(var i = 0 ; i<fileNameList.length;i++){
         fs.writeFileSync('charts/'+templateName+'/'+fileNameList[i], fileTextList[i]);
     }
-    const template = await template.findOne({where : {'TemplateName' : templateName}})
-    let template_id = template.dataValues.id;
+    const result = await template.findOne({where : {'TemplateName' : templateName}})
+    let template_id = result.dataValues.id;
     return template_id;
 }
 
@@ -57,9 +53,13 @@ async function addTemplate(uid,templateName,classFileName,fileNameList,fileTextL
 }
 
 async function getAll(){
-    const result = await template.findAll({
-        attributes : ['TemplateName','status'],
-    })
+    const result = await template.findAll()
+    return result;
+  }
+
+  async function getById(id){
+    const result = await template.findByPk(id);
+    if (!result) throw 'Template not found';
     return result;
   }
   

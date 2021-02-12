@@ -3,7 +3,8 @@ const Role = require('../helper/role')
 const express = require('express');
 const router = express.Router();
 const templateService = require('../services/templateService');
-const logService = require('../services/logService')
+const logService = require('../services/logService');
+const { template } = require('../models/template/template.db');
 
 module.exports = function () {
     router.get('/', (req, res) => {
@@ -14,6 +15,13 @@ module.exports = function () {
 
     router.get('/getAll',authorize([Role.designer,Role.user]), (req,res)=>{
         templateService.getAll().then((result) => {
+            res.status(200).json(result);
+        })
+    })
+
+    router.get('/:id',authorize(Role.designer), (req,res)=>{
+        let id = req.params.id;
+        templateService.getById(id).then((result) => {
             res.status(200).json(result);
         })
     })
@@ -68,12 +76,12 @@ module.exports = function () {
         })
     });
 
-    router.delete('/',authorize(Role.designer),(req, res) => {
-        let templateName = req.body.templateName
-        templateService.deleteTemplate(templateName).then((template_id) => {
+    router.delete('/:id',authorize(Role.designer),(req, res) => {
+        let id = req.params.id;
+        templateService.deleteTemplate(id).then((template_id) => {
             createLog(req.user.role, req.user.sub, template_id, 'delete');
             res.status(200).send({
-                message: 'Deleted template'
+                message: 'Deleted template successfully'
             })
         })
     });   
