@@ -4,7 +4,6 @@ const express = require('express');
 const router = express.Router();
 const templateService = require('../services/templateService');
 const logService = require('../services/logService');
-const { template } = require('../models/template/template.db');
 
 module.exports = function () {
     router.get('/', (req, res) => {
@@ -19,11 +18,19 @@ module.exports = function () {
         })
     })
 
-    router.get('/:id',authorize(Role.designer), (req,res)=>{
+    router.get('/id/:id',authorize(Role.designer), (req,res)=>{
         let id = req.params.id;
         templateService.getById(id).then((result) => {
             res.status(200).json(result);
         })
+    })
+
+    router.get('/owner/me',authorize(Role.designer), (req,res) => {
+        let uid = req.user.sub;
+        console.log(uid);
+        templateService.getOwn(uid).then((result) => {
+            res.status(200).json(result);
+        });
     })
 
     router.post('/',authorize(Role.designer), async (req, res) => {
@@ -59,6 +66,7 @@ module.exports = function () {
     });
     
     router.put('/',authorize(Role.designer),(req, res) => {
+        let uid = req.user.sub;
         let keys = Object.keys(req.files)
         let fileNameList =[]
         let fileTextList = []
@@ -68,7 +76,7 @@ module.exports = function () {
         })
         console.log( fileNameList)
         let templateName = req.body.templateName
-        templateService.updateTemplate(templateName,fileNameList,fileTextList).then((template_id) => {
+        templateService.updateTemplate(templateName,fileNameList,fileTextList,uid).then((template_id) => {
             createLog(req.user.role, req.user.sub, template_id, 'update');
         })
         res.status(200).send({
@@ -78,7 +86,8 @@ module.exports = function () {
 
     router.delete('/:id',authorize(Role.designer),(req, res) => {
         let id = req.params.id;
-        templateService.deleteTemplate(id).then((template_id) => {
+        let uid = req.user.sub;
+        templateService.deleteTemplate(id,uid).then((template_id) => {
             createLog(req.user.role, req.user.sub, template_id, 'delete');
             res.status(200).send({
                 message: 'Deleted template successfully'
