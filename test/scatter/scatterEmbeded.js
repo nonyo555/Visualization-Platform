@@ -1,18 +1,17 @@
 
-function scatter(){
-  //Set up
-    const makeRandomData = (nb) => {
-        const res = [];
-        for (i = 0; i < nb; i++) {
-          res.push({
-            x: Math.random() * 100 | 0,
-            y: Math.random() * 100 | 0,
-            index: Math.random() * 8 | 0,
-          });
-        }
-        return res;
-      };
-
+function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,labelConfig){
+  const makeRandomData = (nb) => {
+    const res = [];
+    const type = ['one','two','three','four','five','six','six','seven','eight','nine','ten','eleven','tweleve']
+    for (i = 0; i < nb; i++) {
+      res.push({
+        x: Math.random() * 10000000| 0,
+        y: Math.random() * 100 | 0,
+        type: type[Math.random() * 13 | 0]
+      });
+    }
+    return res;
+  };
     function httpGet(theUrl)
     {
     var xmlHttp = new XMLHttpRequest();
@@ -20,15 +19,29 @@ function scatter(){
     xmlHttp.send( null );
     return xmlHttp.responseText;
     }
-    var rdata ;
-
-      const data = makeRandomData(104);
-      const color = d3.schemeCategory10;
-
+    //change color ;
+    //if (color.length == 0){
+    var Rainbowcolor =d3.scaleSequential()
+      .domain([0, 100])
+      .interpolator(d3.interpolateRainbow);
+    //}
+    var data =[];
+    console.log(dataset)
+    if(typeof dataset == 'string'){
+      data = JSON.parse( httpGet(dataset))
+      //console.log(data)
+      window.setInterval( async function(){
+        let rdata = await httpGet(dataset)
+        render(JSON.parse(rdata))
+      }, delay)
+    }
+    else if(Array.isArray(dataset)){
+      data  = dataset
+    }
       const margin = { top: 50, right: 50, bottom: 50, left: 50 };
-      const width = 480 - margin.left - margin.right;
-      const height = 480 - margin.top - margin.bottom;
-      var domainRange = [0,100]
+      const width = screenWidth - margin.left - margin.right;
+      const height = screenHeight- margin.top - margin.bottom;
+
 
       const x = d3.scaleLinear()
         .range([0, width])
@@ -36,11 +49,36 @@ function scatter(){
         
       const y = d3.scaleLinear()
         .range([height, 0]);
-
-      const xAxis = d3.axisBottom(x).ticks(12),
+      
+      // const formatDateTime =d3.utcFormat("%B %d %Y");
+      // const formatTime =d3.utcFormat("%I %M %p")
+      const xAxis = d3.axisBottom(x).ticks(8).tickFormat(
+        d=>{
+          if(timemode){
+            let domain = x.domain()
+            let timelength = domain[1]-domain[0]
+            let labelTime1 ,labelTime2
+            //Years
+            if (timelength >31536000*10){
+              return  moment.unix(d).format('YYYY')
+            }
+            // Month
+            else if(timelength >2678400*10)
+              return  moment.unix(d).format('MMMM YYYY')
+            // day  
+            else if (timelength > 86400*10){
+              return  moment.unix(d).format('DD MMMM')
+            }
+            else
+              return moment.unix(d).format('LT')
+          }
+          else  
+            return d
+        }
+      ),
         yAxis = d3.axisLeft(y).ticks(12 * height / width);
       
-      const xAxis2 = d3.axisBottom(x).ticks(12),
+      const xAxis2 = d3.axisBottom(x).ticks(8),
         yAxis2 = d3.axisLeft(y).ticks(12 * height / width);
       
       // const brush = d3.brush()
@@ -53,13 +91,17 @@ function scatter(){
 
       // let idleTimeout,
       //   idleDelay = 350;
-      
+      var uniCollection = []
       const svg = d3.select("#scatter").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-      
+      const legends = svg.append('g')
+        .attr('id','legends')
+
+      makeLegend(data)
+      //console.log(uniCollection)
       // ขอบนอก  
       const clip = svg.append("defs").append("svg:clipPath")
         .attr("id", "clip")
@@ -70,8 +112,15 @@ function scatter(){
         .attr("x", 0)
         .attr("y", 0);
 
-      x.domain(d3.extent(data, d => d.x)).nice();
-      y.domain(d3.extent(data, d => d.y)).nice();
+        if (timemode ==true){
+          data.forEach( json=>{
+            if (typeof json['x'] != 'number')
+              json['x'] = moment(json['x']).unix()
+          })
+        }
+        x.domain(d3.extent(data, d => d[labelConfig.x])).nice();
+        y.domain(d3.extent(data, d => d[labelConfig.y])).nice();
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////      
     //create scatter
       const scatter = svg.append("g")
@@ -83,12 +132,12 @@ function scatter(){
         //.enter()//.append('g')
           .join("circle")
           .attr("class", "dot")
-          .attr('id',d=>'type'+d.index.toString())
+          .attr('id',d=>'type'+d[labelConfig.type].toString())
           .attr("r", 5)
-          .attr("cx", d => x(d.x))
-          .attr("cy", d => y(d.y))
-          .attr("opacity", 0.6)
-          .attr("fill", (d) => color[d.index % 9])
+          .attr("cx", d => x(d[labelConfig.x]))
+          .attr("cy", d => y(d[labelConfig.y]))
+          .attr("opacity", 0.8)
+          .attr("fill", (d) => getColor(d[labelConfig.type]))
           .on('mouseover',tootipPos)
           .on('mouseout',tooltipDis)
 
@@ -138,19 +187,22 @@ function scatter(){
         return max
       }
       function tootipPos(d){
-        let str = JSON.stringify(d)//' hello \n wolrd \n aunaun'
+        let str = tooltip(d)//' hello \n wolrd \n aunaun'
+        console.log(str)
         let maxL = strLongest(str)
+       // console.log(maxL)
         let strList =  str.split('\n')
+        tooltipBox.select('rect').attr('fill',d3.select(this).attr('fill'))
         tooltipText
         .attr('x',()=>{
-                    if(x(d.x)+maxL*7+50 > margin.left+width+margin.right){
-                    return x(d.x)-(tooltipBox.text().length*7)-5
+                    if(x(d[labelConfig.x])+maxL*7+50 > margin.left+width){
+                    return x(d.x)-(maxL*7)-5
                     }
                     else{
-                    return x(d.x)+5
+                    return x(d[labelConfig.x])+5
                     }
             })
-          .attr('y',y(d.y))
+          .attr('y',y(d[labelConfig.y]))
           .style('visibility','visible')
 
         tooltipBox.selectAll('tspan').remove()
@@ -164,18 +216,18 @@ function scatter(){
 
         d3.select('.tooltip')
           .attr('x',()=>{
-            if(x(d.x)+maxL*7+50 > margin.left+width+margin.right){
-                    return x(d.x)-(tooltipBox.text().length*7)-5
+            if(x(d[labelConfig.x])+maxL*7+50 > margin.left+width){
+                    return x(d.x)-(maxL*7)-5
                 }
                 else{
-                    return x(d.x)+5
+                    return x(d[labelConfig.x])+5
                 }
           })
           .attr('height',()=>{
              return    (strList.length *15)+5
 
           })
-          .attr('y',y(d.y)-15)
+          .attr('y',y(d[labelConfig.y])-15)
          .attr('width',maxL*7)
           .style('visibility','visible')
       }
@@ -240,19 +292,15 @@ function scatter(){
       // }
 
       scatter.append('rect')
-      window.setInterval( async function(){
-        rdata = await httpGet('http://localhost/random')
-        render(JSON.parse(rdata))
-    }, 5000)
+
     // Promise.delay(5000).then(() => {
     //   rdata = httpGet('http://localhost/random')
     //   render(JSON.parse(rdata))
     // });
-    var uniCollection = []
-      const legends = svg.append('g')
-        .attr('id','legends')
+    
+      
 
-      makeLegend(data)
+    //  makeLegend(data)
       function makeLegend(newdata){
         newdata.forEach(ele =>{
           if(!uniCollection.includes(ele.index)){
@@ -274,14 +322,12 @@ function scatter(){
         legends.selectAll('#legend')
           .data(uniCollection)
           .join('g')
-            .attr('id',d=>'type'+d.toString())
+            .attr('opacity',0.8)
             .append('circle')
             .style('r',5)
             .attr('cx',10+width)
-            .attr('fill',0.6)
             .attr('cy',(d,i)=>17.5+(15*i))
-            .attr("fill", (d) => color[d % 9])
-        
+            .attr("fill", (d) => getColor(d))
       }
           
       function render(newdata){
@@ -294,21 +340,21 @@ function scatter(){
           .attr("r", 5)
           .attr("cx", d =>{
            // console.log(d)
-            return x(d.x)
+            return x(d[labelConfig.x])
           })
           .attr("cy", d => {
-            return y(d.y)
+            return y(d[labelConfig.y])
           })
           .attr('id',d=>'type'+d.index.toString())
-          .attr("opacity", 0.6)
-          .attr("fill", (d) => color[d.index % 9])
+          .attr("opacity", 0.8)
+          .attr("fill", (d) => getColor(d[labelConfig.type]))
           .on('mouseover',tootipPos)
           .on('mouseout',tooltipDis)
           .transition()
           .duration(700)
           .tween("circle" ,(d)=>{
-            var i = d3.interpolate(0, x(d.x));
-            var j = d3.interpolate(0, y(d.y));
+            var i = d3.interpolate(0, x(d[labelConfig.x]));
+            var j = d3.interpolate(0, y(d[labelConfig.y]));
             return function(t) {
               d3.select(this)
               .attr("cx" ,i(t))
@@ -316,8 +362,8 @@ function scatter(){
                 };
               }
             )
-        x.domain(d3.extent(newdata, d => d.x)).nice();
-        y.domain(d3.extent(newdata, d => d.y)).nice();
+        x.domain(d3.extent(newdata, d => d[labelConfig.x])).nice();
+        y.domain(d3.extent(newdata, d => d[labelConfig.y])).nice();
         zoom()
         d3.select('#legends').selectAll('*').remove()
         makeLegend(newdata)
@@ -342,16 +388,18 @@ function scatter(){
       }
 
       function clickLegned(d){
-        d3.selectAll('#type'+d.toString())
-        .attr('opacity',d=>{
-          if( d3.select(this).attr('opacity') == 0.2){
-            return 0.6
-          }
-          else 
-          return 0.2})
+      //  console.log(d3.select(this).attr('opacity'))
+        if (d3.select(this).attr('opacity')== 0.8){
+          d3.select(this).attr('opacity',0.2)
+          d3.selectAll('#type'+d.toString())
+            .attr('opacity',0.2)
+        }
+        else{
+          d3.select(this).attr('opacity',0.8)
+          d3.selectAll('#type'+d.toString())
+            .attr('opacity',0.8)
+        }
       }
-
-
 
       function zoom() {
         const t = scatter.transition().duration(750);
@@ -375,8 +423,8 @@ function scatter(){
       
         scatter.selectAll("circle")
           .transition(t)
-          .attr("cx", d => x(d.x))
-          .attr("cy", d => y(d.y));
+          .attr("cx", d => x(d[labelConfig.x]))
+          .attr("cy", d => y(d[labelConfig.y]));
       }
     //   const zoom = d3.zoom()
     //   .scaleExtent([1, 5])
@@ -422,15 +470,27 @@ function scatter(){
       else if(event.deltaY == 100){
       let curX =  x.domain()
       let curY = y.domain()
-      x.domain([curX[0]-15, curX[1]+15]);
-      y.domain([curY[0]-15, curY[1]+15]);
+      let lengthX =(curX[1]-curX[0])*5/100 |0
+      let lengthY =(curY[1]-curY[0])*5/100 |0
+      x.domain([curX[0]-lengthX, curX[1]+lengthX]);
+      y.domain([curY[0]-lengthY, curY[1]+lengthY]);
       zoom()
       }
     }
+
+
     var startDragXy ;
     function dragstarted(event) {
       startDragXy = [d3.event.x,d3.event.y]
       //console.log(startDragXy)
+    }
+    function getColor(type){ 
+      let lengthDomain = 100/uniCollection.length
+      let index = uniCollection.indexOf(type)
+      if (color.length ==0 || color.length > uniCollection.length)
+        return Rainbowcolor(lengthDomain*index)
+      else
+        return  color[index]
     }
     function dragSc(event){
       let curX =  x.domain()

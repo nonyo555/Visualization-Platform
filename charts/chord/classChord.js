@@ -13,8 +13,12 @@ class Chord{
     }
     setWidth(width) {
         if (!isNaN(width) ) {
-            console.log('hello')
             this.width = parseInt(width) 
+        }
+    }
+    setHeight(height) {
+        if (!isNaN(height)) {
+            this.height = parseInt(height)
         }
     }
     setPathTitle(config){
@@ -70,11 +74,7 @@ class Chord{
         this.setRibbonTitle(config)
         this.setPathTitle(config)
     }
-    setHeight(height) {
-        if (!isNaN(height)) {
-            this.height = parseInt(height)
-        }
-    }
+    
     getWidth() {
         return this.width
     }
