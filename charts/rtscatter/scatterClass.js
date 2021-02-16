@@ -11,7 +11,7 @@ class rtscatter{
                 return `x:`+d.x+`\ny:`+d.y
         }
        // this.linkAPI = `"http://localhost/random"`
-        this.data  = `"http://localhost/random"`
+        this.data  = ``
         this.delay = 60000
         this.timeMode;
         this.labelConfig = {x:'x',y:'y',index:'index'}
@@ -61,10 +61,7 @@ class rtscatter{
     setColor(config){
         console.log('color')
         if (Object.keys(config).includes('color')){
-            if (Array.isArray(config.color))
                 this.color = config.color
-           // else
-                //throw "Your color config is wrong"
         }    
     }
     setTooltip(config){

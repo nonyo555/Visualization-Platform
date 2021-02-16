@@ -20,16 +20,13 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
     return xmlHttp.responseText;
     }
     //change color ;
-    //if (color.length == 0){
     var Rainbowcolor =d3.scaleSequential()
       .domain([0, 100])
       .interpolator(d3.interpolateRainbow);
     //}
     var data =[];
-    console.log(dataset)
     if(typeof dataset == 'string'){
       data = JSON.parse( httpGet(dataset))
-      //console.log(data)
       window.setInterval( async function(){
         let rdata = await httpGet(dataset)
         render(JSON.parse(rdata))
@@ -50,9 +47,7 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
         
       const y = d3.scaleLinear()
         .range([height, 0]);
-      
-      // const formatDateTime =d3.utcFormat("%B %d %Y");
-      // const formatTime =d3.utcFormat("%I %M %p")
+
       const xAxis = d3.axisBottom(x).ticks(8).tickFormat(
         d=>{
           if(timemode){
@@ -82,16 +77,6 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
       const xAxis2 = d3.axisBottom(x).ticks(8),
         yAxis2 = d3.axisLeft(y).ticks(12 * height / width);
       
-      // const brush = d3.brush()
-      //   .extent([[0, 0], [width, height]])
-      //  .on("end", brushended);
-      // const zoom = d3.zoom()
-      // .scaleExtent([1, 5])
-      // .translateExtent([[0, 0], [width, height]])
-      // .on("zoom", () => {console.log('hello')});
-
-      // let idleTimeout,
-      //   idleDelay = 350;
       var uniCollection = []
       const svg = d3.select("#scatter").append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -102,7 +87,6 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
         .attr('id','legends')
 
       makeLegend(data)
-      //console.log(uniCollection)
       // ขอบนอก  
       const clip = svg.append("defs").append("svg:clipPath")
         .attr("id", "clip")
@@ -190,9 +174,7 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
       }
       function tootipPos(d){
         let str = tooltip(d)//' hello \n wolrd \n aunaun'
-        console.log(str)
         let maxL = strLongest(str)
-       // console.log(maxL)
         let strList =  str.split('\n')
         tooltipBox.select('rect').attr('fill',d3.select(this).attr('fill'))
         tooltipText
@@ -270,36 +252,10 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
       //     .style("text-anchor", "end")
       //     .text("Y axis");
       
-      //  scatter.append("g")
-      //      .attr("class", "brush")
-      //      .call(zoom);
-      
-      // function brushended() {
-      //   const s = d3.event.selection;
-      //   console.log(s)
-      //   if (!s) {
-      //       if (!idleTimeout) {
-      //         return idleTimeout = setTimeout(() => {
-      //           idleTimeout = null;
-      //         }, idleDelay);
-      //       }
-      //       x.domain(d3.extent(data, d => d.x)).nice();
-      //       y.domain(d3.extent(data, d => d.y)).nice();
-      //   } else {
-      //       x.domain([s[0][0], s[1][0]].map(x.invert, x));
-      //       y.domain([s[1][1], s[0][1]].map(y.invert, y));
-      //       scatter.select(".brush").call(brush.move, null);
-      //   }
-      //   zoom();
-      // }
+
 
       scatter.append('rect')
 
-    // Promise.delay(5000).then(() => {
-    //   rdata = httpGet('http://localhost/random')
-    //   render(JSON.parse(rdata))
-    // });
-    
       
 
     //  makeLegend(data)
@@ -307,7 +263,6 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
         newdata.forEach(ele =>{
           if(!uniCollection.includes(ele.index)){
             uniCollection.push(ele.index)
-          //  console.log(uniCollection)
           }
         })
         legends.selectAll('#legend')
@@ -335,13 +290,11 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
       function render(newdata){
       let scat = d3.select("g#scatterplot");
       scatter.selectAll('circle').remove()
-      //console.log( scat.selectAll('*'))
       
       scatter.selectAll(".dot").data(newdata).join("circle")
           .attr("class", "dot")
           .attr("r", 5)
           .attr("cx", d =>{
-           // console.log(d)
             return x(d[labelConfig.x])
           })
           .attr("cy", d => {
@@ -390,7 +343,6 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
       }
 
       function clickLegned(d){
-      //  console.log(d3.select(this).attr('opacity'))
         if (d3.select(this).attr('opacity')== 0.8){
           d3.select(this).attr('opacity',0.2)
           d3.selectAll('#type'+d.toString())
@@ -428,31 +380,10 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
           .attr("cx", d => x(d[labelConfig.x]))
           .attr("cy", d => y(d[labelConfig.y]));
       }
-    //   const zoom = d3.zoom()
-    //   .scaleExtent([1, 5])
-    //   .translateExtent([[0, 0], [width, height]])
-    //   .on("zoom", () => { zoomed(d3.event.transform); });
-      
-    //   scatter.append('g')
-    //   .attr('id','zoomed')
-    //   .call(zoom);
 
-    //  clip.on('dblclick.zoom', () => {
-    //     zoomed(d3.zoomTransform({x: 0, y: 0, k: 1}))
-    //   });
     const drag = d3.drag()
     .on("start",dragstarted)
     .on("drag", dragSc)
-  //  .on("end",dragEnd)
-    //   function zoomed() {
-    //     console.log('yes')
-    //   }
-    // clip.call(drag)
-
-    // const zoom = d3.zoom()
-    // .scaleExtent([1, 5])
-    // .translateExtent([[0, 0], [width, height]])
-    // .on("zoom", () => {console.log('hello')});
 
     d3.select('.domain').on('wheel',scroll)
     d3.select('.domain').call(drag)
@@ -478,34 +409,29 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
       zoom()
       }
     }
-
-
     var startDragXy ;
     function dragstarted(event) {
       startDragXy = [d3.event.x,d3.event.y]
-      //console.log(startDragXy)
     }
     function getColor(type){ 
       let lengthDomain = 100/uniCollection.length
       let index = uniCollection.indexOf(type)
-      if (color.length ==0 || color.length > uniCollection.length)
+      if (Object.keys(color).length ==0 || Object.keys(color).length > uniCollection.length)
         return Rainbowcolor(lengthDomain*index)
       else
-        return  color[index]
+        return  color[type]
     }
-    function dragSc(event){
+    function dragSc(){
       let curX =  x.domain()
       let curY = y.domain()
       let midX = x.invert(d3.event.x) - x.invert(startDragXy[0])
       let midY = y.invert(d3.event.y) - y.invert(startDragXy[1])
-    //s  console.log([midX,midY])
       x.domain([curX[0]- midX, curX[1]- midX]);
       y.domain([curY[0]-midY, curY[1]-midY]);
       zoom()
       startDragXy  = [d3.event.x,d3.event.y]
     }
 
-    // cannot detect if not have color (wtf!!!!!!!)
     d3.select('.domain').attr('fill','white')
      .attr('fill-opactiy',0.0)
 }
