@@ -7,7 +7,6 @@ function chords(data,width,height,ribbons,paths,jsonColor){
     const index = new Map(names.map((name, i) => [name, i]));
     var matrix = Array.from(index, () => new Array(names.length).fill(0));
     for (const {source, target, value} of data) matrix[index.get(source)][index.get(target)] += value;
-    //console.log(matrix)
     var chord = d3.chordDirected()
         .padAngle(12 / innerRadius)
         .sortSubgroups(d3.descending)
@@ -20,14 +19,8 @@ function chords(data,width,height,ribbons,paths,jsonColor){
         .radius(innerRadius - 0.5)
         .padAngle(1 / innerRadius)
 
-    console.log(names)
     var color = d3.scaleOrdinal(names, d3.schemeCategory10)
-    // Object.keys(jsonColor).forEach(key => {
-    //     color[names.indexOf(keu)] = jsonColor[key]
-    // });
-    // console.log(color)
 
-    //div
     const div =d3.select('div')
         .style('width',width*1.1)
         .style('height',height*1.1)
@@ -48,10 +41,9 @@ const firHy = ((height*-0.476)+(radius/2))
 const secHy = ((height*-0.476)+(height*0.95)-(radius/2))
 
 
-
-divided= (max-min)/(((height*-0.476)+(height*0.95)-(radius/2))-((height*-0.476)+(radius/2)))
+var  linearDomain = d3.scaleLinear().range([min,max]).domain([secHy,firHy])
 function dragged(event, d) {
-  if (this.id == "firstHandle" ){
+  if (d3.select(this).attr("class")  == "firstHandle" ){
     if (d3.event.y < parseFloat(secH.attr('cy'))){
        firH.attr("cy",  d3.event.y);
     }
@@ -59,13 +51,13 @@ function dragged(event, d) {
        firH.attr("cy",  secH.attr("cy"));
   }
   }
-  else if (this.id == "secondHandle" ) {
+  else if (d3.select(this).attr("class")  == "secondHandle" ) {
     if (d3.event.y > parseFloat(firH.attr('cy'))){
       secH.attr("cy",  d3.event.y);
     }
     else{
       secH.attr("cy",   firH.attr("cy"));
- }
+  }
   }
   if (firH.attr('cy')<firHy){
     firH.attr("cy",   firHy);
@@ -73,11 +65,9 @@ function dragged(event, d) {
   else if (secH.attr('cy')>secHy){
     secH.attr("cy",   secHy);
   }
+  labelTop.text(linearDomain(firH.attr("cy"))|0)
+  labelDown.text(linearDomain(secH.attr("cy"))|0)
 
-let maxV = parseInt(max- ((firH.attr('cy')-firHy)*divided)).toString()
-let minV =  parseInt(((secHy-secH.attr('cy'))*divided)+min).toString()
-labelTop.text(maxV)
-labelDown.text(minV)
 }
 
 function arcTween(d) {
@@ -128,7 +118,7 @@ drag = d3.drag()
         .attr('cursor','pointer')
         .attr('cy',firHy)
         .attr('r',radius)
-        .attr('id','firstHandle')
+        .attr('class','firstHandle')
         .attr('fill','red')
         .call(drag)
     const secH =  svg.append('circle')
@@ -136,12 +126,12 @@ drag = d3.drag()
         .attr('cursor','pointer')
         .attr('cy',secHy)
         .attr('r',radius)
-        .attr('id','secondHandle')
+        .attr('class','secondHandle')
         .attr('fill','red')
         .call(drag)
     const labelTop = svg
           .append('text')
-          .attr('id','range')
+          .attr('id','firstHandle')
           .attr('type','number')
           .attr('x',width *0.595+(lineW/2))
           .attr('y',firHy-30)
@@ -151,7 +141,7 @@ drag = d3.drag()
           .text (max.toString())
     const labelDown = svg
           .append('text')
-          .attr('id','range')
+          .attr('id','secondHandle')
           .attr('type','number')
           .attr('x',width *0.595+(lineW/2))
           .attr('y',secHy +40)
@@ -171,10 +161,14 @@ drag = d3.drag()
     .join("path")
     .attr('id','ribbon')
     .attr("d", ribbon)
-    .attr("fill", d => color(names[d.target.index]))
+    .attr("fill", d => {
+      if(Object.keys(jsonColor).includes(names[d.target.index])){
+        return jsonColor[names[d.target.index]]
+      }
+      return color(names[d.target.index])})
     .style("mix-blend-mode", "multiply")
     .append("title")
-    .text(d => `${ribbons[0]} ${names[d.source.index]} ${ribbons[1]}${names[d.target.index]} ${ribbons[2]} ${d.source.value} ${ribbons[3]}`);
+    .text(ribbons);
     
     svg.append("g")
     .attr('id','colorline')
@@ -201,8 +195,16 @@ drag = d3.drag()
       .on('click',pathMouseClicked)
       .on('mouseover',pathMouseOver)
       .on('mouseout',pathMouseOut)
-      .attr("fill", d =>  color(names[d.index]))
-      .attr("stroke", d => color(names[d.index]))
+      .attr("fill", d => {
+        if(Object.keys(jsonColor).includes(names[d.index])){
+          return jsonColor[names[d.index]]
+        }
+        return color(names[d.index])})
+      .attr("stroke", d => {
+        if(Object.keys(jsonColor).includes(names[d.index])){
+          return jsonColor[names[d.index]]
+        }
+        return color(names[d.index])})
       .attr('stroke-width', 3))
       .call(g => g.append("text")
                 .each(d => (d.angle = (d.startAngle + d.endAngle) / 2))
@@ -216,8 +218,7 @@ drag = d3.drag()
                 .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
                 .text(d => names[d.index]))
         .call(g => g.append("title")
-       // .attr('id','colorline')
-    .text(d => ` ${paths[0]}${names[d.index]} ${paths[1]} ${d3.sum(matrix[d.index])} ${paths[2]} ${d3.sum(matrix, row => row[d.index])}  ${paths[3]}`));
+        .text(paths));
 
   var oldPathValue =  d3.selectAll('#colorline').selectAll('path').data()
 
@@ -227,7 +228,6 @@ drag = d3.drag()
 
   }
   function pathMouseClicked (event,index){
-      //let sel =
       svg.selectAll('path')
         .attr("fill-opacity", 0.3)
       d3.select(this)
@@ -258,9 +258,8 @@ drag = d3.drag()
   function render (){
       
       oldPathValue =  d3.selectAll('#colorline').selectAll('path').data()
-      let maxV = parseInt(max- ((firH.attr('cy')-firHy)*divided))
-      let minV =  parseInt(((secHy-secH.attr('cy'))*divided)+min)
-      //test demomatrix
+      let maxV = linearDomain(firH.attr("cy"))|0
+      let minV =  linearDomain(secH.attr("cy"))|0
       var demomatrix =   Array.from(index, () => new Array(names.length).fill(0));
       for (const {source, target, value} of data) demomatrix[index.get(source)][index.get(target)] += value;
       for(let i =0;i<demomatrix.length;i++){
@@ -285,10 +284,14 @@ drag = d3.drag()
   .attr('id','ribbon')
   .attr("d", ribbon)
 
-  .attr("fill", d => color(names[d.target.index]))
+  .attr("fill", d => {
+    if(Object.keys(jsonColor).includes(names[d.target.index])){
+      return jsonColor[names[d.target.index]]
+    }
+    return color(names[d.target.index])})
   .style("mix-blend-mode", "multiply")
   .append("title")
-  .text(d => `${ribbons[0]} ${names[d.source.index]} ${ribbons[1]}${names[d.target.index]} ${ribbons[2]} ${d.source.value} ${ribbons[3]}`);
+  .text(ribbons);
  d3.selectAll('#colorline').selectAll('path').remove()
  d3.selectAll('#colorline').selectAll('title').remove()
 
@@ -307,8 +310,16 @@ drag = d3.drag()
       .duration(700)
       .attrTween("d",d=> arcTween(d))
       .attr('id','colorline')
-      .attr("fill", d =>  color(names[d.index]))
-      .attr("stroke", d => color(names[d.index]))
+      .attr("fill", d =>  {
+        if(Object.keys(jsonColor).includes(names[d.index])){
+          return jsonColor[names[d.index]]
+        }
+        return color(names[d.index])})
+      .attr("stroke", d =>{
+        if(Object.keys(jsonColor).includes(names[d.index])){
+          return jsonColor[names[d.index]]
+        }
+        return color(names[d.index])})
       .attr('stroke-width', 3)
       )
       .each(async n=>{
@@ -335,7 +346,7 @@ drag = d3.drag()
       })
       .call(g => g.append("title")
       .attr('id','colorline')
-      .text(d => ` ${paths[0]}${names[d.index]} ${paths[1]} ${d3.sum(demomatrix[d.index])} ${paths[2]} ${d3.sum(demomatrix, row => row[d.index])}  ${paths[3]}`));
+      .text(paths));
     }
     }
 module.exports = { chords}

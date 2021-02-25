@@ -21,15 +21,7 @@ function zoomableSunburst(data,title,pathlabel){
     const root = partition(data);
   
       root.each(d => d.current = d);
-        
-  
-      // const doc = new JSDOM('<svg></svg>')
-      // const svg = d3.select(doc.window.document.querySelector("svg"))
-      //     .attr("width" ,width)
-      //     .attr("height" ,width)
-      //     .attr("viewBox", [0, 0, width, width])
-      //     .style("font", "10px sans-serif");
-  
+
       const svg = d3.select("svg")
           .attr("viewBox", [0, 0, width, width])
           .style("font", "10px sans-serif");
@@ -75,7 +67,6 @@ function zoomableSunburst(data,title,pathlabel){
       function clicked(event, p) {
         parent.datum(event.parent || root);
         p = event
-        console.log(event.parent || root)
         root.each(d => d.target = {
           x0: Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
           x1: Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
@@ -98,7 +89,7 @@ function zoomableSunburst(data,title,pathlabel){
             .attrTween("d", d => () => arc(d.current));
     
         label.filter(function(d) {
-            //console.log(d)
+
             return +this.getAttribute("fill-opacity") || labelVisible(d.target);
           }).transition(t)
             .attr("fill-opacity", d => +labelVisible(d.target))
@@ -115,11 +106,11 @@ function zoomableSunburst(data,title,pathlabel){
     
       function labelTransform(d) {
         const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
-       // console.log(x)
+
         const y = (d.y0 + d.y1) / 2 * radius;
         return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
       }
-     //console.log(svg.node())
+
      return svg.node()
     }
   module.exports = {zoomableSunburst}

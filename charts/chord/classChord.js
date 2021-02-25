@@ -1,15 +1,22 @@
 var fs = require('fs');
 var d3 = require('d3');
 var chord = require('./chordEmbeded')
-
-
 class Chord{
     constructor(){
         this.width = 800
         this.height = 800   
         this.data = []
-        this.ribbonTitles = ["","=>","=","B"]
-        this.pathTitles = ["","=>","=>","B"] 
+        this.color = {}
+        this.ribbonTitles = function (d) {
+            let ribName = Array.from(new Set(dataset.flatMap(d => [d.source, d.target])))
+            return `${ribName[d.source.index]} => ${ribName[d.target.index]} = ${d.source.value}` }
+        this.pathTitles = function(d){
+            let pathName = Array.from(new Set(dataset.flatMap(d => [d.source, d.target])))
+            let pathIndex=  new Map(pathName.map((name, i) => [name, i]));
+            let pathMatrix =   Array.from(pathIndex, () => new Array(pathName.length).fill(0));
+            for (const {source, target, value} of dataset) pathMatrix[pathIndex.get(source)][pathIndex.get(target)] += value;
+            return `${pathName[d.index]} => other =  ${d3.sum(pathMatrix[d.index])} \n  other => ${pathName[d.index]} = ${d3.sum(pathMatrix, row => row[d.index])} `
+        }
     }
     setWidth(width) {
         if (!isNaN(width) ) {
@@ -22,38 +29,21 @@ class Chord{
         }
     }
     setPathTitle(config){
-        var keys = Object.keys(config)
-        if(keys.includes('pathTitle0')){
-            this.leftTitle = config.leftTitle
-        }
-        else if(keys.includes('pathTitle1')){
-            this.middleLeftTitle = config.middleLeftTitle
-        }
-        else if(keys.includes('pathTitle2')){
-            this.middleRightTitle = config.middleRightTitle
-        }
-        else if (keys.includes('pathTitle3')){
-            this.rightTitle = config.rigthTitle
+        if (Object.keys(config).includes('ribbonTitles')){
+            if(typeof config.ribbonTitles == 'string'){
+                this.ribbonTitles = config.ribbonTitles
+            }
         }
     }
     setRibbonTitle(config){
-        var keys = Object.keys(config)
-        if(keys.includes('ribbonTitle0')){
-            this.leftTitle = config.leftTitle
-        }
-        else if(keys.includes('ribbonTitle1')){
-            this.middleLeftTitle = config.middleLeftTitle
-        }
-        else if(keys.includes('ribbonTitle2')){
-            this.middleRightTitle = config.middleRightTitle
-        }
-        else if (keys.includes('ribbonTitle3')){
-            this.rightTitle = config.rigthTitle
+        if (Object.keys(config).includes('pathTitles')){
+            if(typeof config.pathTitles  == 'string'){
+                this.pathTitles  = config.pathTitles 
+            }
         }
     }
     setJsontoJsonDataset(jsonList,config){
         var newJsonList = []
-        console.log(jsonList)
         jsonList.forEach(json => {
             let newJson = {}
             newJson['source'] = json[config['source']]
@@ -63,9 +53,13 @@ class Chord{
         });
         this.data = newJsonList
     }
+    setColor(config){
+        if(Object.keys(config).includes('color')){
+            this.color = config.color
+        }
+    }
     setAttr(data,config){
         var keys = Object.keys(config)
-        //if (key.includes = )
         if (keys.includes('width') && keys.includes('height')) {
             this.setWidth(config.width)
             this.setHeight(config.height)
@@ -73,24 +67,15 @@ class Chord{
         this.setJsontoJsonDataset(data,config)
         this.setRibbonTitle(config)
         this.setPathTitle(config)
+        this.setColor(config)
     }
-    
     getWidth() {
         return this.width
     }
     getHeight() {
         return this.height
     }  
-    getTest(){
-        return this.test
-    }
     generateHTML(){
-        let ribbons = []
-        let paths = []
-        for (let i = 0; i < this.ribbonTitles.length; i++) {
-            ribbons.push(`'` + this.ribbonTitles[i] + `'`)
-            paths.push(`'` + this.pathTitles[i] + `'`)
-        }
         var dom = `
         <head>
         <script src="https://d3js.org/d3.v5.js"></script>
@@ -109,7 +94,7 @@ class Chord{
     <script>
         var dataset = `+ JSON.stringify(this.data)+`
         `+chord.chords.toString()+`
-        chords(dataset,`+this.width.toString()+`,`+this.height.toString()+`,[`+ribbons+`],[`+paths+`],`+JSON.stringify(this.color)+`)
+        chords(dataset,`+this.width.toString()+`,`+this.height.toString()+`,`+this.ribbonTitles.toString()+`,`+this.pathTitles.toString()+`,`+JSON.stringify(this.color)+`)
     </script>
     </body>
         `

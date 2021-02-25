@@ -23,7 +23,7 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
     var Rainbowcolor =d3.scaleSequential()
       .domain([0, 100])
       .interpolator(d3.interpolateRainbow);
-    //}
+
     var data =[];
     if(typeof dataset == 'string'){
       data = JSON.parse( httpGet(dataset))
@@ -115,7 +115,6 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
       // ทำเป๋น  realtime
       scatter.selectAll(".dot")
           .data(data)
-        //.enter()//.append('g')
           .join("circle")
           .attr("class", "dot")
           .attr('id',d=>'type'+d[labelConfig.type].toString())
@@ -127,21 +126,6 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
           .on('mouseover',tootipPos)
           .on('mouseout',tooltipDis)
 
-         // .exit();
-      // scatter.selectAll('g')
-      //       .append('rect')
-      //       .attr('width',50)
-      //       .attr('height',50)
-      //       .attr('x',d=> x(d.x))
-      //       .attr('y',d=> y(d.y))
-      //       .attr('fill','red')
-      //       .attr('fill-opacity',0.2);
-
-      // scatter.selectAll('g')
-      //       .append('text')
-      //       .attr('x',d=> x(d.x)-10)
-      //       .attr('y',d=> y(d.y)-10)
-      //       .text('Hellooooooo')    
 
       const tooltipBox =svg.append('g')
         .attr('id','tooltipBox')
@@ -149,9 +133,7 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
         .attr('class','tooltipText')
         .attr('x',margin.top)
         .attr('y',margin.right)
-        //.text('hello')
         .style('font-size',15)
-        //.attr('fill-opacity',0.2);
       tooltipBox.insert('rect')
         .attr('class','tooltip')
         .attr('width',50)
@@ -173,7 +155,7 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
         return max
       }
       function tootipPos(d){
-        let str = tooltip(d)//' hello \n wolrd \n aunaun'
+        let str = tooltip(d)
         let maxL = strLongest(str)
         let strList =  str.split('\n')
         tooltipBox.select('rect').attr('fill',d3.select(this).attr('fill'))
@@ -233,30 +215,13 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
          .attr("transform", "translate(0," + height + ")")
          .call(xAxis);
       
-      // svg.append("text")
-      //   .style("text-anchor", "end")
-      //   .attr("x", width - 4)
-      //   .attr("y", height - 8)
-      //   .text("X axis");
-
       //scale  แกน Y
       svg.append("g")
           .attr("class", "y axis")
           .attr('id', "axis--y")
-          .call(yAxis);
-      // svg.append("text")
-      //     .attr("transform", "rotate(-90)")
-      //     .attr("x", -5)
-      //     .attr("y", 4)
-      //     .attr("dy", "1em")
-      //     .style("text-anchor", "end")
-      //     .text("Y axis");
+          .call(yAxis)
       
-
-
       scatter.append('rect')
-
-      
 
     //  makeLegend(data)
       function makeLegend(newdata){
@@ -288,7 +253,7 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
       }
           
       function render(newdata){
-      let scat = d3.select("g#scatterplot");
+      d3.select("g#scatterplot");
       scatter.selectAll('circle').remove()
       
       scatter.selectAll(".dot").data(newdata).join("circle")
@@ -390,10 +355,10 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
     function scroll(d){
       let event = d3.event;
       let s = new Array(4) 
-      s[0]= d3.event.x - 150//190 //sx1
-      s[1]= d3.event.y - 150  //y1
-      s[2]=d3.event.x + 150//258  //x2
-      s[3]= d3.event.y+150//330   //y2
+      s[0]= d3.event.x - 150
+      s[1]= d3.event.y - 150 
+      s[2]=d3.event.x + 150
+      s[3]= d3.event.y+150
       if (event.deltaY == -100){
         x.domain([s[0], s[2]].map(x.invert, x));
         y.domain([s[3],s[1]].map(y.invert, y));

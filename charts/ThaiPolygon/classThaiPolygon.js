@@ -149,12 +149,6 @@ class ThaiPolygon{
         })
         }
     }
-    getJson(){
-        return this.json
-    }
-    getLabel(){
-        return this.label 
-    }
     setLabel(data,labelColumn){
         let label =[]
         data.forEach(ajson=>{
@@ -168,20 +162,14 @@ class ThaiPolygon{
         else{throw 'Label is not Array'}
     }
     setWidth(width) {
-        if (typeof width === 'number'){
-        this.width = width
+        if (!isNaN(width) ) {
+            this.width = parseInt(width) 
         }
     }
     setHeight(height) {
-        if (typeof height === 'number'){
-        this.height = height
+        if (!isNaN(height)) {
+            this.height = parseInt(height)
         }
-    }
-    getWidth() {
-       return this.width
-    }
-    getHeight() {
-        return this.height
     }
     generateHTML(){
         this.json = checkColorSetting(this.json)

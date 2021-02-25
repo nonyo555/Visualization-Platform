@@ -1,18 +1,28 @@
 var linepie = require('./embeded');
 var d3 = require('d3');
-function checkColorSetting2(json) {
+function checkColorSetting2(json,config) {
     var defaultColor = ['#ff9f40', '#ffcd56', '#4bc0c0', '#36a2eb', '#9966ff', '#ff6384']
-    json.forEach(ajson => {
-        var keys = Object.keys(ajson)
+    var Rainbowcolor =d3.scaleSequential()
+        .domain([0, json.length])
+        .interpolator(d3.interpolateRainbow);
+   for (let i = 0 ;i<json.length;i++){
+        let ajson = json[i]
+        let keys = Object.keys(ajson)
         if (!keys.includes('backgroundColor') || !keys.includes('borderColor')) {
-            var color = defaultColor.pop()
-            var bgcolor = d3.rgb(color)
+            let color = '' ;
+            if (Object.keys(config.color).includes(ajson['label'])){
+                color = config.color[ajson['label']]
+            }
+            else{
+                color = Rainbowcolor(i)
+            }
+            let bgcolor = d3.rgb(color)
             bgcolor.opacity = 0.7
             ajson['borderColor'] = color
             ajson['backgroundColor'] = `rgba(${bgcolor.r},${bgcolor.g},${bgcolor.b}, ${bgcolor.opacity})`
         }
 
-    })
+    }
     return json
 }
 function updatePieJson(json) {
@@ -31,39 +41,55 @@ class LinePie {
         this.pieJson = {}
         this.percenMode = true
     }
+    setPercenMode(config){
+        if(Object.keys(config).includes('percenMode')){
+            if(config.percenMode.toLowerCase() == 'true'){
+                this.percenMode = true
+            }
+            else if (config.percenMode.toLowerCase() == 'false'){
+                this.percenMode = false
+            }
+            else
+                throw 'percenMode column is wrong'
+        }
+    }
     setWidth(width) {
-        if (typeof width === 'number') {
-            this.width = width
+        if (!isNaN(width) ) {
+            this.width = parseInt(width) 
         }
     }
     setHeight(height) {
-        if (typeof height === 'number') {
-            this.height = height
+        if (!isNaN(height)) {
+            this.height = parseInt(height)
         }
     }
     setAttr(data, config) {
-        console.log(data)
         var keys = Object.keys(config)
-        //if (key.includes = )
         if (keys.includes('width') && keys.includes('height')) {
             this.setWidth(config.width)
             this.setHeight(config.height)
         }
-        //this.setLabel(config.templatelabel)
+        this.setLabel(data,config)
+        this.setPercenMode(config)
         this.setJsontoJsonDataset(data, config);
+        this.lineJson = checkColorSetting2(this.lineJson,config)
     }
-    getWidth() {
-        return this.width
-    }
-    getHeight() {
-        return this.height
+    setLabel(data,config){
+        if(Object.keys(config).includes('label')){
+            let label = []
+            data.forEach(ele=>{
+                if(!label.includes(ele[config.label])){
+                    label.push(ele[config.label])
+                }
+            })
+            this.label = label
+        }
     }
     setJsontoJsonDataset(jsonList, config) {
-        let datsetsLabelColumn = config.label
+        let datsetsTypeColumn = config.type
         let dataColumn = config.data
         jsonList.forEach(ajson => {
-            var label = ajson[datsetsLabelColumn]
-            console.log(datsetsLabelColumn)
+            var label = ajson[datsetsTypeColumn]
             var haveDataset = false;
             this.lineJson.forEach(ljson => {
                 if (ljson.label == label) {
@@ -73,13 +99,12 @@ class LinePie {
                 }
             })
             if (haveDataset == false) {
-                this.lineJson.push({ 'label': ajson[datsetsLabelColumn], 'data': [ajson[dataColumn]] })
+                this.lineJson.push({ 'label': ajson[datsetsTypeColumn], 'data': [ajson[dataColumn]] })
             }
         })
         this.pieJson = updatePieJson(this.lineJson)
     }
     generateHTML() {
-        this.lineJson = checkColorSetting2(this.lineJson)
         var label = []
         for (let i = 0; i < this.label.length; i++) {
             label.push(`'` + this.label[i] + `'`)

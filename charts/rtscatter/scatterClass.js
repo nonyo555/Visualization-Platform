@@ -65,7 +65,6 @@ class rtscatter{
         }    
     }
     setTooltip(config){
-        console.log('tooltip')
         if(!Object.keys(config).includes('title') && this.timeMode){
             this.title = function (d) {
                 //timeMode

@@ -69,9 +69,9 @@ function  linepie(label,linedataset,piedataset,width,height,percenMode= 'false')
     .join("text")
       .attr("dy", "0.35em")
       .attr("transform", d => {
-        const x = ((radius-(radius*0.6))/2)+(radius*0.6)
-        const y = radius*((((d.endAngle-d.startAngle)/2)+d.startAngle)/Math.PI);
-       return  `rotate(${y - 90}) translate(${x},0) rotate(${-y+90}) `;
+        let x = radius*0.8
+        let y = ((d.startAngle+d.endAngle)*90)/Math.PI;
+       return  `rotate(${y-90}) translate(${x}) rotate(${-y+90})`;
      })
       .text(d=>{
         if(d.value !=0){
@@ -88,10 +88,8 @@ function  linepie(label,linedataset,piedataset,width,height,percenMode= 'false')
       }}
         )
   function render(){
-    //console.log(event)
     oldValue = d3.selectAll('path').data() ;
     data_ready2 = pie(d3.entries(piedataset))
-    //console.log(oldValue)
     svg
       .selectAll('path')
       .data(data_ready2)
@@ -117,10 +115,10 @@ function  linepie(label,linedataset,piedataset,width,height,percenMode= 'false')
         .join("text")
           .attr("dy", "0.35em")
           .attr("transform", d => {
-             const x = ((radius-(radius*0.6))/2)+(radius*0.6)
-             const y = radius*((((d.endAngle-d.startAngle)/2)+d.startAngle)/Math.PI);
-            return  `rotate(${y - 90}) translate(${x},0) rotate(${-y+90}) `;
-          })
+            let x = radius*0.8
+            let y = ((d.startAngle+d.endAngle)*90)/Math.PI;
+           return  `rotate(${y-90}) translate(${x}) rotate(${-y+90}) `;
+         })
           .text(d=>{
             if(d.value !=0){
               if(percenMode ==true){
@@ -132,7 +130,7 @@ function  linepie(label,linedataset,piedataset,width,height,percenMode= 'false')
                 var  percen = (d.value/sum)*100
                 return String(percen.toFixed(2))+'%'
               }
-            return d.value
+            return d.value.toFixed(2)
           }}
             );
     svg.selectAll("whatever")
@@ -205,7 +203,6 @@ function  linepie(label,linedataset,piedataset,width,height,percenMode= 'false')
                           if(ele.label  ==  e.text){
                             if ( piedataset[e.text] ==0){
                               piedataset[e.text]  = window.chart.config.trueData[e.text]
-                               //console.log(data2.copy())
                              }
                              else{
                               piedataset[e.text] = 0
