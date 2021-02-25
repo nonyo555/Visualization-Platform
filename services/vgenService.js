@@ -99,11 +99,13 @@ async function create(refId, uid, vname){
   try {
       var file_id;
       const filename = refId + ".html";
-      const path = __basedir + "\\generated\\" + filename;
+      const path = "generated/" + filename;
       console.log(path);
-      //var text = await fs.readFileSync(__basedir + "\\generated\\" + filename)
-      //console.log (text.toString('hex'))
-
+      var result = await template.findOne({
+        attributes : ['img'],
+        where : { TemplateName : vname }
+      })
+      console.log(result);
       if (fs.existsSync(path)) {
           console.log("file exist");
           await filedb.file.create({
@@ -111,7 +113,8 @@ async function create(refId, uid, vname){
               data: fs.readFileSync(path),
               template: vname,
               user_id: uid,
-              status: 'active'
+              status: 'active',
+              img: result.img
           }).then((file) => {
               console.log(file);
               file_id = file.dataValues.id;
@@ -128,10 +131,8 @@ async function create(refId, uid, vname){
 async function update(refId, uid, vname){
   try {
       const filename = refId + ".html";
-      const path = __basedir + "\\generated\\" + filename;
+      const path = "generated/" + filename;
       console.log(path);
-      //var text = await fs.readFileSync(__basedir + "\\generated\\" + filename)
-      //console.log (text.toString('hex'))
 
       if (fs.existsSync(path)) {
           console.log("file exist");
@@ -147,7 +148,6 @@ async function update(refId, uid, vname){
           })
 
           var file = await filedb.file.findOne({attributes : ['id']},{ where : {refId : refId}})
-          console.log(file.id);
         return file.id;  
       }
   } catch (error) {
@@ -257,7 +257,7 @@ async function getFiles(refId, uid){
 
 async function getAllRefId(uid){
   const result = await filedb.file.findAll({
-      attributes : ['id','refId','template','status'],
+      attributes : ['id','refId','template','img', 'status'],
       where : {
           user_id : uid
       }
@@ -289,7 +289,7 @@ async function Vgen(templateName){
         }
     })
     if (result != null){
-      var objectClass = require(result.Path).object()
+      var objectClass = require(result.class_path).object()
       return objectClass
       }
       else{

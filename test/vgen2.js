@@ -7,7 +7,7 @@ async function Vgen(templateName){
         }
     })
     if (result != null){
-    var objectClass = require(result.Path).object
+    var objectClass = require(result.class_path).object
     return objectClass
     }
     else{

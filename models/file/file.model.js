@@ -4,7 +4,8 @@ module.exports = (sequelize, DataTypes) => {
       data: { type: DataTypes.BLOB("long"), allowNull: false },
       template: { type: DataTypes.STRING, allowNull: false },
       user_id: { type: DataTypes.INTEGER, allowNull: false },
-      status: { type: DataTypes.ENUM('active','inactive'), allowNull: false }
+      status: { type: DataTypes.ENUM('active','inactive'), allowNull: false },
+      img : { type: DataTypes.STRING, allowNull: false }
     });
   
     return file;

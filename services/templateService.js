@@ -20,26 +20,52 @@ async function deleteTemplate(id, uid) {
     return id;
 }
 
-async function updateTemplate(templateName, fileNameList, fileTextList, uid) {
+async function updateTemplate(templateName, description, classFileName, embeddedFileName, fileNameList, fileTextList, img, uid) {
     const result = await template.findOne({ where: { 'TemplateName': templateName } })
     if (result.uid == uid) {
-        for (var i = 0; i < fileNameList.length; i++) {
+        for (var i = 0; i < 2; i++) {
             fs.writeFileSync('charts/' + templateName + '/' + fileNameList[i], fileTextList[i]);
         }
+        if (img) {
+            fs.writeFileSync('public/' + img.name, img.data);
+            await template.update({
+                'description': description,
+                'img': img.name,
+                'class_path': '../charts/' + templateName + '/' + classFileName,
+                'embedded_path': '../charts/' + templateName + '/' + embeddedFileName,
+            },
+                {
+                    where: { TemplateName: templateName }
+                });
+        }
+        else {
+            await template.update({
+                'description': description,
+                'class_path': '../charts/' + templateName + '/' + classFileName,
+                'embedded_path': '../charts/' + templateName + '/' + embeddedFileName,
+            },
+                {
+                    where: { TemplateName: templateName }
+                });
+        }
+
     } else throw "Unauthorized"
 
     return result.id;
 }
 
-async function addTemplate(uid, templateName, classFileName, fileNameList, fileTextList) {
+async function addTemplate(uid, templateName, description, img, classFileName, embeddedFileName, fileNameList, fileTextList) {
     //console.log(check)
-    if (!await template.findOne({ where: { TemplateName : templateName } })) {
+    if (!await template.findOne({ where: { TemplateName: templateName } })) {
         console.log("not find one")
         var template_id;
         await template.create({
             'uid': uid,
             'TemplateName': templateName,
-            'Path': '../charts/' + templateName + '/' + classFileName,
+            'description': description,
+            'img': img.name,
+            'class_path': '../charts/' + templateName + '/' + classFileName,
+            'embedded_path': '../charts/' + templateName + '/' + embeddedFileName,
             'status': 'active'
         }).then((template) => {
             template_id = template.dataValues.id
@@ -50,6 +76,8 @@ async function addTemplate(uid, templateName, classFileName, fileNameList, fileT
         for (let i = 0; i < fileNameList.length; i++) {
             fs.writeFileSync('charts/' + templateName + '/' + fileNameList[i], fileTextList[i]);
         }
+
+        fs.writeFileSync('public/' + img.name, img.data);
         return template_id;
     }
     else {
@@ -70,7 +98,7 @@ async function getById(id) {
 }
 
 async function getOwn(uid) {
-    const result = await template.findAll({where : {uid : uid}});
+    const result = await template.findAll({ where: { uid: uid } });
     return result;
 }
 
