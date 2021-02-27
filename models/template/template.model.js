@@ -6,6 +6,8 @@ module.exports = (sequelize, DataTypes) => {
         img: { type: DataTypes.STRING, allowNull: false },
         class_path: { type: DataTypes.STRING, allowNull: false },
         embedded_path: { type: DataTypes.STRING, allowNull: false },
+        data: { type: DataTypes.STRING, allowNull: false },
+        config: { type: DataTypes.STRING, allowNull: false },
         status: { type: DataTypes.ENUM('active','inactive'), allowNull: false }
     };
     return sequelize.define('template', attributes);

@@ -1,2 +1,5 @@
 column,data,d
 column,label,la
+column,type,ty
+column,percenMode,FALSE
+color,a,#DC143C

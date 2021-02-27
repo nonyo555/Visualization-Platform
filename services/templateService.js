@@ -20,42 +20,45 @@ async function deleteTemplate(id, uid) {
     return id;
 }
 
-async function updateTemplate(templateName, description, classFileName, embeddedFileName, fileNameList, fileTextList, img, uid) {
+async function updateTemplate(uid,templateName, description, img, classFile, embeddedFile, data, config ) {
     const result = await template.findOne({ where: { 'TemplateName': templateName } })
     if (result.uid == uid) {
-        for (var i = 0; i < 2; i++) {
-            fs.writeFileSync('charts/' + templateName + '/' + fileNameList[i], fileTextList[i]);
-        }
         if (img) {
-            fs.writeFileSync('public/' + img.name, img.data);
             await template.update({
                 'description': description,
                 'img': img.name,
-                'class_path': '../charts/' + templateName + '/' + classFileName,
-                'embedded_path': '../charts/' + templateName + '/' + embeddedFileName,
+                'class_path': '../charts/' + templateName + '/' + classFile.name,
+                'embedded_path': '../charts/' + templateName + '/' + embeddedFile.name,
+                'data': data.name,
+                'config': config.name
             },
                 {
                     where: { TemplateName: templateName }
                 });
+            fs.writeFileSync('public/' + img.name, img.data);    
         }
         else {
             await template.update({
                 'description': description,
-                'class_path': '../charts/' + templateName + '/' + classFileName,
-                'embedded_path': '../charts/' + templateName + '/' + embeddedFileName,
+                'class_path': '../charts/' + templateName + '/' + classFile.name,
+                'embedded_path': '../charts/' + templateName + '/' + embeddedFile.name,
+                'data': data.name,
+                'config': config.name
             },
                 {
                     where: { TemplateName: templateName }
                 });
         }
-
+        fs.writeFileSync('charts/' + templateName + '/' + classFile.name, classFile.data);
+        fs.writeFileSync('charts/' + templateName + '/' + embeddedFile.name, embeddedFile.data);
+        fs.writeFileSync('public/example-files/' + data.name, data.data);
+        fs.writeFileSync('public/example-files/' + config.name, config.data);
     } else throw "Unauthorized"
 
     return result.id;
 }
 
-async function addTemplate(uid, templateName, description, img, classFileName, embeddedFileName, fileNameList, fileTextList) {
-    //console.log(check)
+async function addTemplate(uid, templateName, description, img, classFile, embeddedFile, data, config) {
     if (!await template.findOne({ where: { TemplateName: templateName } })) {
         console.log("not find one")
         var template_id;
@@ -64,20 +67,25 @@ async function addTemplate(uid, templateName, description, img, classFileName, e
             'TemplateName': templateName,
             'description': description,
             'img': img.name,
-            'class_path': '../charts/' + templateName + '/' + classFileName,
-            'embedded_path': '../charts/' + templateName + '/' + embeddedFileName,
+            'class_path': '../charts/' + templateName + '/' + classFile.name,
+            'embedded_path': '../charts/' + templateName + '/' + embeddedFile.name,
+            'data': data.name,
+            'config': config.name,
             'status': 'active'
         }).then((template) => {
             template_id = template.dataValues.id
         })
+
         if (!fs.existsSync('charts/' + templateName)) {
             fs.mkdirSync('charts/' + templateName)
         }
-        for (let i = 0; i < fileNameList.length; i++) {
-            fs.writeFileSync('charts/' + templateName + '/' + fileNameList[i], fileTextList[i]);
-        }
 
+        fs.writeFileSync('charts/' + templateName + '/' + classFile.name, classFile.data);
+        fs.writeFileSync('charts/' + templateName + '/' + embeddedFile.name, embeddedFile.data);
         fs.writeFileSync('public/' + img.name, img.data);
+        fs.writeFileSync('public/example-files/' + data.name, data.data);
+        fs.writeFileSync('public/example-files/' + config.name, config.data);
+
         return template_id;
     }
     else {
