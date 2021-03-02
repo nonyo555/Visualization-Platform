@@ -5,6 +5,7 @@ const template = templatedb.template;
 module.exports = {
     deleteTemplate,
     updateTemplate,
+    updateActivate,
     addTemplate,
     getAll,
     getById,
@@ -20,7 +21,7 @@ async function deleteTemplate(id, uid) {
     return id;
 }
 
-async function updateTemplate(uid,templateName, description, img, classFile, embeddedFile, data, config ) {
+async function updateTemplate(uid, templateName, description, img, classFile, embeddedFile, data, config) {
     const result = await template.findOne({ where: { 'TemplateName': templateName } })
     if (result.uid == uid) {
         if (img) {
@@ -35,7 +36,7 @@ async function updateTemplate(uid,templateName, description, img, classFile, emb
                 {
                     where: { TemplateName: templateName }
                 });
-            fs.writeFileSync('public/' + img.name, img.data);    
+            fs.writeFileSync('public/' + img.name, img.data);
         }
         else {
             await template.update({
@@ -56,6 +57,27 @@ async function updateTemplate(uid,templateName, description, img, classFile, emb
     } else throw "Unauthorized"
 
     return result.id;
+}
+
+async function updateActivate(id, status, uid) {
+    var newStatus = status == "active" ? "inactive" : "active";
+    await template.update({
+        status: newStatus
+    }, {
+        where: {
+            id: id,
+            uid: uid
+        }
+    })
+
+    var result = await template.findOne({
+        where: {
+            id: id,
+            uid: uid
+        }
+    })
+
+    return result;
 }
 
 async function addTemplate(uid, templateName, description, img, classFile, embeddedFile, data, config) {
@@ -95,7 +117,11 @@ async function addTemplate(uid, templateName, description, img, classFile, embed
 }
 
 async function getAll() {
-    const result = await template.findAll()
+    const result = await template.findAll({
+        where: {
+            status: 'active'
+        }
+    })
     return result;
 }
 

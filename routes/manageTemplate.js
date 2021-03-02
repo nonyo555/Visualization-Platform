@@ -159,6 +159,17 @@ module.exports = function () {
         })
     });
 
+    router.put('/activate/:id', authorize(Role.designer), (req,res) => {
+        var status = req.body.status;
+        var id = req.params.id;
+        var uid = req.user.sub;
+
+        templateService.updateActivate(id,status,uid).then((result)=>{
+            createLog(req.user.role, req.user.sub, result.id, 'update');
+            res.status(200).json({ message : 'Template Update successfully'});
+        })
+    })
+
     router.delete('/:id', authorize(Role.designer), (req, res) => {
         let id = req.params.id;
         let uid = req.user.sub;
