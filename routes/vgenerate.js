@@ -14,7 +14,7 @@ module.exports = function () {
         })
     });
 
-    router.post('/:vname', authorize([Role.user, Role.designer]), async (req, res) => {
+    router.post('/:vname', authorize([Role.user, Role.designer]), async (req, res, next) => {
         var vname = req.params.vname;
         var data = [];
         var config;
@@ -88,7 +88,7 @@ module.exports = function () {
                         })
                     }
                     else res.json({ message: 'Maximum number of visualization generated reached, Please delete some before generate new visualization' })
-                })
+                }).catch(next);
             })
         }
         catch (err) {
@@ -126,7 +126,7 @@ module.exports = function () {
         */
     });
 
-    router.get('/d3', authorize([Role.user, Role.designer]), (req, res) => {
+    router.get('/d3', authorize([Role.user, Role.designer]), (req, res, next) => {
         let uid = req.user.sub;
 
         vgenService.getAllRefId(uid).then((result) => {
@@ -135,10 +135,10 @@ module.exports = function () {
             } 
             else
                 res.status(400).json({ message: "error" });
-        })
+        }).catch(next);
     });
 
-    router.get('/d3/:refId', authorize([Role.user, Role.designer]), (req, res) => {
+    router.get('/d3/:refId', authorize([Role.user, Role.designer]), (req, res, next) => {
         let refId = req.params.refId;
         let uid = req.user.sub;
 
@@ -154,7 +154,7 @@ module.exports = function () {
         })
     });
 
-    router.get('/d3/ppt/:token', authorizeFromQueryStr([Role.user, Role.designer]), (req, res) => {
+    router.get('/d3/ppt/:token', authorizeFromQueryStr([Role.user, Role.designer]), (req, res, next) => {
         let refId = req.query.refId;
         let uid = req.user.sub;
 
@@ -170,7 +170,7 @@ module.exports = function () {
         })
     })
 
-    router.put('/:refId',authorize([Role.user,Role.designer]), async (req,res) => {
+    router.put('/:refId',authorize([Role.user,Role.designer]), async (req, res, next) => {
         var refId = req.params.refId;
         var vname = req.body.vname;
         var data = [];
@@ -241,14 +241,14 @@ module.exports = function () {
                         })
                     }
                     else res.status(400).json({ message: 'Maximum number of visualization generated reached, Please delete some before generate new visualization' })
-                })
+                }).catch(next);
         }
         catch (err) {
             res.status(400).json({ message: 'Error : ' + err })
         }
     })
 
-    router.put('/activate/:refId', authorize([Role.user,Role.designer]), (req,res) => {
+    router.put('/activate/:refId', authorize([Role.user,Role.designer]), (req,res, next) => {
         var status = req.body.status;
         var refId = req.params.refId;
         var uid = req.user.sub;
@@ -257,7 +257,7 @@ module.exports = function () {
             console.log(result);
             createLog(req.user.role, req.user.sub, result.id, 'update');
             res.status(200).json({ message : 'File Update successfully'});
-        })
+        }).catch(next);
     })
 
     router.delete('/:id', authorize([Role.user, Role.designer]), (req, res, next) => {
@@ -269,7 +269,7 @@ module.exports = function () {
         }).catch(next)
     })
 
-    router.get('/preconfig/:refId', authorize([Role.user, Role.designer]), (req, res) => {
+    router.get('/preconfig/:refId', authorize([Role.user, Role.designer]), (req, res, next) => {
         let refId = req.params.refId;
         let uid = req.user.sub;
 
@@ -282,7 +282,7 @@ module.exports = function () {
                 configFileName : result.configFileName,
                 status: result.status
             });
-        })
+        }).catch(next);
     })
 
     return router;

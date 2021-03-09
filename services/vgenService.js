@@ -134,11 +134,17 @@ async function update(refId, uid, vname){
       const path = "generated/" + filename;
       console.log(path);
 
+      var result = await template.findOne({
+        attributes : ['img'],
+        where : { TemplateName : vname }
+      })
+
       if (fs.existsSync(path)) {
           console.log("file exist");
           await filedb.file.update({
               data: fs.readFileSync(path),
               template: vname,
+              img: result.img
           },
           {
             where: {
