@@ -27,10 +27,6 @@ async function create(uid, title, message) {
 }
 
 async function update(id, uid, title, message) {
-    if (await announcement.findOne({ where: { title: title } })) {
-        throw 'Title "' + title + '" is already used';
-    }
-
     await announcement.update({
         title: title,
         message: message

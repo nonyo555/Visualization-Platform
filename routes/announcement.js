@@ -34,9 +34,14 @@ module.exports = function () {
         let uid = req.user.sub;
         let title = req.body.title;
         let message = req.body.message
-        announcementService.create(uid, title, message).then((result) => {
-            res.status(200).json(result);
-        }).catch(next);
+        if(title!="" && message!=""){
+            announcementService.create(uid, title, message).then((result) => {
+                res.status(200).json(result);
+            }).catch(next);
+        } else {
+            res.status(400).json({ message : "title and message can't be empty."})
+        }
+        
     })
 
     router.put('/:id', authorize(Role.designer), (req, res, next) => {
@@ -45,9 +50,13 @@ module.exports = function () {
         let title = req.body.title;
         let message = req.body.message
 
+        if(title!="" && message!=""){
         announcementService.update(id, uid, title, message).then((result) => {
             res.status(200).json(result)
         }).catch(next);
+        } else {
+            res.status(400).json({ message : "title and message can't be empty."})
+        }
     });
 
     router.delete('/:id', authorize(Role.designer), (req, res, next) => {
