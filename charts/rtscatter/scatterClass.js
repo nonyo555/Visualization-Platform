@@ -44,7 +44,7 @@ class rtscatter{
             this.setHeight(config.height)
         }
         this.setTimeMode(config.timeMode)
-        this.setDelay(config.delay)
+        this.setDelay(config)
         this.setColor(config)
         this.setTooltip(config)
         this.setData(data,config)
@@ -92,10 +92,10 @@ class rtscatter{
         else
             throw 'Error data format'
     }
-    setDelay(delay){
-        if (this.timeMode){
-            if(!isNaN(delay))
-                this.delay = delay 
+    setDelay(config){
+        if (Object.keys(config).includes('delay')){
+            if(!isNaN(config.delay))
+                this.delay = parseInt(config.delay) 
             else
                 throw "Your delay is not a number"
         }

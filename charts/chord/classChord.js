@@ -85,11 +85,11 @@ class Chord{
     </head>
 
     <body>
-      <div style="position: relative;">
+     
       <svg id ='graph'>
       </svg>
-      </div>
-      </div>
+  
+      
       
     <script>
         var dataset = `+ JSON.stringify(this.data)+`

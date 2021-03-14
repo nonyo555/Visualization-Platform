@@ -1,17 +1,6 @@
 
 function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,labelConfig){
-  const makeRandomData = (nb) => {
-    const res = [];
-    const type = ['one','two','three','four','five','six','six','seven','eight','nine','ten','eleven','tweleve']
-    for (i = 0; i < nb; i++) {
-      res.push({
-        x: Math.random() * 10000000| 0,
-        y: Math.random() * 100 | 0,
-        type: type[Math.random() * 13 | 0]
-      });
-    }
-    return res;
-  };
+    
     function httpGet(theUrl)
     {
     var xmlHttp = new XMLHttpRequest();
@@ -19,7 +8,7 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
     xmlHttp.send( null );
     return xmlHttp.responseText;
     }
-    //change color ;
+
     var Rainbowcolor =d3.scaleSequential()
       .domain([0, 100])
       .interpolator(d3.interpolateRainbow);
@@ -29,22 +18,22 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
       data = JSON.parse( httpGet(dataset))
       window.setInterval( async function(){
         let rdata = await httpGet(dataset)
-        render(JSON.parse(rdata))
+        // let  mdata = mergeJson(data,JSON.parse(rdata))
+        data = data.concat(JSON.parse(rdata))
+        render(data)
       }, delay)
     }
     else if(Array.isArray(dataset)){
       data  = dataset
     }
-    
       const margin = { top: 50, right: 50, bottom: 50, left: 50 };
       const width = screenWidth - margin.left - margin.right;
       const height = screenHeight- margin.top - margin.bottom;
 
-
       const x = d3.scaleLinear()
         .range([0, width])
         .nice();
-        
+      
       const y = d3.scaleLinear()
         .range([height, 0]);
 
@@ -53,7 +42,6 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
           if(timemode){
             let domain = x.domain()
             let timelength = domain[1]-domain[0]
-            let labelTime1 ,labelTime2
             //Years
             if (timelength >31536000*10){
               return  moment.unix(d).format('YYYY')
@@ -105,8 +93,8 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
         }
         x.domain(d3.extent(data, d => d[labelConfig.x])).nice();
         y.domain(d3.extent(data, d => d[labelConfig.y])).nice();
-        const curX =  x.domain()
-        const curY = y.domain()
+        var curX =  x.domain()
+        var curY = y.domain()
 //////////////////////////////////////////////////////////////////////////////////////////////////////      
     //create scatter
       const scatter = svg.append("g")
@@ -125,7 +113,6 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
           .attr("fill", (d) => getColor(d[labelConfig.type]))
           .on('mouseover',tootipPos)
           .on('mouseout',tooltipDis)
-
 
       const tooltipBox =svg.append('g')
         .attr('id','tooltipBox')
@@ -226,8 +213,8 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
     //  makeLegend(data)
       function makeLegend(newdata){
         newdata.forEach(ele =>{
-          if(!uniCollection.includes(ele.index)){
-            uniCollection.push(ele.index)
+          if(!uniCollection.includes(ele[labelConfig.type])){
+            uniCollection.push(ele[labelConfig.type])
           }
         })
         legends.selectAll('#legend')
@@ -253,10 +240,7 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
       }
           
       function render(newdata){
-      d3.select("g#scatterplot");
-      scatter.selectAll('circle').remove()
-      
-      scatter.selectAll(".dot").data(newdata).join("circle")
+      scatter.selectAll(".dot").data(newdata).enter().append("circle")
           .attr("class", "dot")
           .attr("r", 5)
           .attr("cx", d =>{
@@ -265,7 +249,7 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
           .attr("cy", d => {
             return y(d[labelConfig.y])
           })
-          .attr('id',d=>'type'+d.index.toString())
+          .attr('id',d=>'type'+d[labelConfig.type].toString())
           .attr("opacity", 0.8)
           .attr("fill", (d) => getColor(d[labelConfig.type]))
           .on('mouseover',tootipPos)
@@ -273,7 +257,7 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
           .transition()
           .duration(700)
           .tween("circle" ,(d)=>{
-            var i = d3.interpolate(0, x(d[labelConfig.x]));
+            var i = d3.interpolate( x(d[labelConfig.x]), x(d[labelConfig.x]));
             var j = d3.interpolate(0, y(d[labelConfig.y]));
             return function(t) {
               d3.select(this)
@@ -282,8 +266,8 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
                 };
               }
             )
-        x.domain(d3.extent(newdata, d => d[labelConfig.x])).nice();
-        y.domain(d3.extent(newdata, d => d[labelConfig.y])).nice();
+        x.domain(d3.extent(data, d => d[labelConfig.x])).nice();
+        y.domain(d3.extent(data, d => d[labelConfig.y])).nice();
         zoom()
         d3.select('#legends').selectAll('*').remove()
         makeLegend(newdata)
@@ -366,14 +350,15 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
       }
       //scroll down
       else if(event.deltaY == 100){
-
+      curX =  x.domain()
+      curY = y.domain()
       let lengthX =(curX[1]-curX[0])*5/100 |0
       let lengthY =(curY[1]-curY[0])*5/100 |0
       x.domain([curX[0]-lengthX, curX[1]+lengthX]);
       y.domain([curY[0]-lengthY, curY[1]+lengthY]);
       zoom()
       }
-    }
+    } 
     var startDragXy ;
     function dragstarted(event) {
       startDragXy = [d3.event.x,d3.event.y]

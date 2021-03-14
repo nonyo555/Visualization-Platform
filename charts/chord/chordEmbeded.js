@@ -14,11 +14,14 @@ function chords(data,width,height,ribbons,paths,jsonColor){
     var arc = d3.arc()
         .innerRadius(innerRadius)
         .outerRadius(outerRadius)
+      //  .headRadius(5)
     
     var ribbon = d3.ribbonArrow()
         .radius(innerRadius - 0.5)
         .padAngle(1 / innerRadius)
+        .headRadius(20)
 
+        
     var color = d3.scaleOrdinal(names, d3.schemeCategory10)
 
     const div =d3.select('div')
@@ -67,7 +70,6 @@ function dragged(event, d) {
   }
   labelTop.text(linearDomain(firH.attr("cy"))|0)
   labelDown.text(linearDomain(secH.attr("cy"))|0)
-
 }
 
 function arcTween(d) {
@@ -169,6 +171,7 @@ drag = d3.drag()
     .style("mix-blend-mode", "multiply")
     .append("title")
     .text(ribbons);
+
     
     svg.append("g")
     .attr('id','colorline')
@@ -183,7 +186,7 @@ drag = d3.drag()
       }
       return parseInt(width/56>25 )
 
-     }) //15
+     }) 
     .selectAll("g")
     .data(chords.groups)
     .join("g")
