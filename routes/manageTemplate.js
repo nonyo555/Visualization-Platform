@@ -20,14 +20,20 @@ module.exports = function () {
         }).catch(next);
     })
 
-    router.get('/id/:id', authorize(Role.designer), (req, res ,next) => {
+    router.get('/id/:id', authorize([Role.designer, Role.user]), (req, res ,next) => {
+        let id = req.params.id;
+        templateService.getById(id).then((result) => {
+            res.status(200).json(result)
+        }).catch(next);
+    })
+
+    router.get('/file/:id', authorize(Role.designer), (req, res ,next) => {
         let id = req.params.id;
         templateService.getById(id).then((result) => {
             let class_file = fs.readFileSync(result.class_path.substr(3));
             let embedded_file = fs.readFileSync(result.embedded_path.substr(3));
             let data_file = fs.readFileSync('public/example-files/' + result.data);
             let config_file = fs.readFileSync('public/example-files/' + result.config);
-            console.log(data_file);
             res.status(200).json({
                 id: result.id,
                 uid: result.uid,
