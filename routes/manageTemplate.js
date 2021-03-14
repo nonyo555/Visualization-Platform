@@ -14,20 +14,26 @@ module.exports = function () {
         });
     })
 
-    router.get('/getAll', authorize([Role.designer, Role.user]), (req, res) => {
+    router.get('/getAll', authorize([Role.designer, Role.user]), (req, res ,next) => {
         templateService.getAll().then((result) => {
             res.status(200).json(result);
-        })
+        }).catch(next);
     })
 
-    router.get('/id/:id', authorize(Role.designer), (req, res) => {
+    router.get('/id/:id', authorize([Role.designer, Role.user]), (req, res ,next) => {
+        let id = req.params.id;
+        templateService.getById(id).then((result) => {
+            res.status(200).json(result)
+        }).catch(next);
+    })
+
+    router.get('/file/:id', authorize(Role.designer), (req, res ,next) => {
         let id = req.params.id;
         templateService.getById(id).then((result) => {
             let class_file = fs.readFileSync(result.class_path.substr(3));
             let embedded_file = fs.readFileSync(result.embedded_path.substr(3));
             let data_file = fs.readFileSync('public/example-files/' + result.data);
             let config_file = fs.readFileSync('public/example-files/' + result.config);
-            console.log(data_file);
             res.status(200).json({
                 id: result.id,
                 uid: result.uid,
@@ -43,19 +49,19 @@ module.exports = function () {
                 config_file: config_file.toString(),
                 data_name: result.data,
                 config_name: result.config
-            });
-        })
+            })
+        }).catch(next);
     })
 
-    router.get('/owner/me', authorize(Role.designer), (req, res) => {
+    router.get('/owner/me', authorize(Role.designer), (req, res ,next) => {
         let uid = req.user.sub;
         console.log(uid);
         templateService.getOwn(uid).then((result) => {
             res.status(200).json(result);
-        });
+        }).catch(next);
     })
 
-    router.post('/', authorize(Role.designer), async (req, res) => {
+    router.post('/', authorize(Role.designer), async (req, res ,next) => {
         let keys = Object.keys(req.files)
         if (keys.includes("class")) {
             let templateName = req.body.templateName;
@@ -122,7 +128,7 @@ module.exports = function () {
                         console.log(err);
                         throw err;
                     }
-                })
+                }).catch(next);
 
             }
             catch (err) {
@@ -131,7 +137,7 @@ module.exports = function () {
         }
     });
 
-    router.put('/', authorize(Role.designer), (req, res) => {
+    router.put('/', authorize(Role.designer), (req, res ,next) => {
         let uid = req.user.sub;
 
         let templateName = req.body.templateName;
@@ -156,10 +162,10 @@ module.exports = function () {
             res.status(200).send({
                 message: 'Updated template'
             })
-        })
+        }).catch(next);
     });
 
-    router.put('/activate/:id', authorize(Role.designer), (req,res) => {
+    router.put('/activate/:id', authorize(Role.designer), (req,res ,next) => {
         var status = req.body.status;
         var id = req.params.id;
         var uid = req.user.sub;
@@ -167,10 +173,10 @@ module.exports = function () {
         templateService.updateActivate(id,status,uid).then((result)=>{
             createLog(req.user.role, req.user.sub, result.id, 'update');
             res.status(200).json({ message : 'Template Update successfully'});
-        })
+        }).catch(next);
     })
 
-    router.delete('/:id', authorize(Role.designer), (req, res) => {
+    router.delete('/:id', authorize(Role.designer), (req, res ,next) => {
         let id = req.params.id;
         let uid = req.user.sub;
         templateService.deleteTemplate(id, uid).then((template_id) => {
@@ -178,7 +184,7 @@ module.exports = function () {
             res.status(200).send({
                 message: 'Deleted template successfully'
             })
-        })
+        }).catch(next);
     });
 
     return router

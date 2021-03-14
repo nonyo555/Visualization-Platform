@@ -16,10 +16,12 @@ const templatedb = require('./models/template/template.db')
 const userdb = require('./models/user/user.db')
 const user_log = require('./models/user_log/user_log.db')
 const user_usage = require('./models/user_usage/user_usage.db')
+const announcementdb = require('./models/announcement/announcement.db')
 
 const authentication = require('./routes/authentication')(io);
 const vgenerate = require('./routes/vgenerate')(io);
 const manageTemplate = require('./routes/manageTemplate')(io);
+const announcement = require('./routes/announcement')(io);
 
 const errorHandler = require('./helper/error-handler');
 
@@ -33,6 +35,7 @@ templatedb.sequelize.sync()
 userdb.sequelize.sync()
 user_log.sequelize.sync()
 user_usage.sequelize.sync()
+announcementdb.sequelize.sync()
 
 //force drop and resync table
  /*db.sequelize.sync({ force: true }).then(() => {
@@ -48,9 +51,10 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use('/node/api/authentication', authentication);
 app.use('/node/api/vgenerate', vgenerate);
 app.use('/node/api/manageTemplate', manageTemplate);
+app.use('/node/api/announcement',announcement)
 
 app.get('/node', (req, res) => {
-    res.status(200).send({
+    res.status(200).json({
         message: 'Visualization Platform routes'
       })
 })
