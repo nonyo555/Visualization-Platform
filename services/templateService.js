@@ -1,6 +1,7 @@
 const fs = require('fs');
 const templatedb = require("../models/template/template.db");
 const template = templatedb.template;
+const rimraf = require("rimraf");
 
 module.exports = {
     deleteTemplate,
@@ -21,7 +22,7 @@ async function deleteTemplate(id, uid) {
         const config_path = 'public/example-files/'+ result.config;
 
         try {
-            fs.rmdirSync(dir, { recursive: true });
+            rimraf.sync(dir);
             fs.unlinkSync(img_path);
             fs.unlinkSync(data_path);
             fs.unlinkSync(config_path);
