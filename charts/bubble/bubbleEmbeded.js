@@ -1,5 +1,5 @@
 
-function bubble(data,sWidth,sHeigth,titleText){
+function bubble(data,sWidth,sHeigth,titleText,color){
 
     const margin = { top: 50, right: 50, bottom: 50, left: 50 };
     const width = sWidth- margin.left - margin.right;
@@ -54,7 +54,7 @@ function bubble(data,sWidth,sHeigth,titleText){
   // Add Y axis
   svg.append("g")
     .call(yAxis);
-  var color = {}
+  //var color = {}
   function getColor(type){ 
       let lengthDomain = 100/uniCollection.length
       let index = uniCollection.indexOf(type)

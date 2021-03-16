@@ -33,6 +33,9 @@ function thaiPolygon(label,chartData,rwidth,rheight){
           scales: {
             xAxes: [{
               stacked: true,
+              gridLines: {
+                color: "rgba(0, 0, 0, 0)",
+            }
             }],
             yAxes: [{
               stacked: true
@@ -56,6 +59,7 @@ function thaiPolygon(label,chartData,rwidth,rheight){
       .style('height','60%')
       .style('right','1vw')
       .style('bottom','10vh')
+      .style('background-color','white')
 
     svg.append('rect')
       .style("fill", "#fff")

@@ -92,7 +92,7 @@ module.exports = function () {
                     try {
                         if (data && config) {
                             if (data.mimetype == 'text/csv' || data.mimetype == 'application/vnd.ms-excel') {
-                                parsed_data = vgenService.csvtojson(data.data.toString());
+                                parsed_data = vgenService.csvtojson(data.data.toString('utf-8'));
                             }
                             else if (data.mimetype == 'application/json') {
                                 parsed_data = JSON.parse(data.data);
