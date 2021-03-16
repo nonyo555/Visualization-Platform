@@ -142,12 +142,12 @@ module.exports = function () {
 
         let templateName = req.body.templateName;
         let description = req.body.description;
-        let img = req.files.image == '' ? req.files.image : null;
+        let img = req.files.image == '' ? null : req.files.image;
         let classFile = req.files.class;
         let embeddedFile = req.files.embedded;
         let data = req.files.data;
         let config = req.files.config;
-
+        
         //check files type
         if ((img && img.name.split('.').pop() != "jpg" && img.name.split('.').pop() != "jpeg" && img.name.split('.').pop() != "png") ||
             (classFile.name.split('.').pop() != "js") ||
