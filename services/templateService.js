@@ -14,8 +14,25 @@ module.exports = {
 
 async function deleteTemplate(id, uid) {
     const result = await getById(id)
-    if (result.uid == uid)
+    if (result.uid == uid){
+        const dir = 'charts/' + result.TemplateName;
+        const img_path = 'public/'+ result.img;
+        const data_path = 'public/example-files/'+ result.data;
+        const config_path = 'public/example-files/'+ result.config;
+
+        try {
+            fs.rmdirSync(dir, { recursive: true });
+            fs.unlinkSync(img_path);
+            fs.unlinkSync(data_path);
+            fs.unlinkSync(config_path);
+        } catch(err) {
+            console.error(err);
+            throw err;
+        }
+
         await result.destroy();
+    }
+        
     else throw "Unauthorized";
 
     return id;
@@ -34,7 +51,9 @@ async function updateTemplate(uid, templateName, description, img, classFile, em
                 'config': config.name
             },
                 {
-                    where: { TemplateName: templateName }
+                    where: { 
+                        TemplateName: templateName ,
+                    }
                 });
             fs.writeFileSync('public/' + img.name, img.data);
         }
@@ -82,7 +101,6 @@ async function updateActivate(id, status, uid) {
 
 async function addTemplate(uid, templateName, description, img, classFile, embeddedFile, data, config) {
     if (!await template.findOne({ where: { TemplateName: templateName } })) {
-        console.log("not find one")
         var template_id;
         await template.create({
             'uid': uid,
@@ -111,7 +129,6 @@ async function addTemplate(uid, templateName, description, img, classFile, embed
         return template_id;
     }
     else {
-        console.log("find one")
         throw "Already have this Template"
     }
 }
