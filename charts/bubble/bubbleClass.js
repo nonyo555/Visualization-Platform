@@ -11,7 +11,7 @@ class bubbleChart{
                 yCol:'yCol',
                 valueCol:'valueCol',};
         this.title = function (d) {
-            return ` x: ${d[labelConfig.xCol]}  y: ${d[labelConfig.yCol]} value:${d[labelConfig.valueCol]} `}
+            return ` ${labelConfig.xCol}: ${d[labelConfig.xCol]}   ${labelConfig.yCol}: ${d[labelConfig.yCol]}  ${labelConfig.valueCol}:${d[labelConfig.valueCol]} `}
         this.color= {}
     }
     setWidth(width) {
