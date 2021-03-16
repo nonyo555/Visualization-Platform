@@ -33,6 +33,9 @@ function thaiPolygon(label,chartData,rwidth,rheight){
           scales: {
             xAxes: [{
               stacked: true,
+              gridLines: {
+                color: "rgba(0, 0, 0, 0)",
+            }
             }],
             yAxes: [{
               stacked: true
