@@ -11,7 +11,8 @@ class bubbleChart{
                 yCol:'yCol',
                 valueCol:'valueCol',};
         this.title = function (d) {
-            return ` ${labelConfig.xCol}: ${d[labelConfig.xCol]}  ${labelConfig.yCol}: ${d[labelConfig.yCol]} ${labelConfig.valueCol}:${d[labelConfig.valueCol]} `}
+            return ` x: ${d[labelConfig.xCol]}  y: ${d[labelConfig.yCol]} value:${d[labelConfig.valueCol]} `}
+        this.color= {}
     }
     setWidth(width) {
         if (!isNaN(width) ) {
@@ -62,6 +63,10 @@ class bubbleChart{
         this.setData(data)
         this.setLabelConfig(config)
         this.setTootip(config)
+        this.setColor(config)
+    }
+    setColor(config){
+        this.color = config.color
     }
     generateHTML(){
         var dom = `
@@ -78,7 +83,7 @@ class bubbleChart{
         <script>
         var labelConfig = ${JSON.stringify(this.labelConfig)}
         ${bubbleEm.bubble.toString()}
-        bubble(${JSON.stringify(this.data)},${this.width.toString()},${this.height.toString()},${this.title.toString()})
+        bubble(${JSON.stringify(this.data)},${this.width.toString()},${this.height.toString()},${this.title.toString()},${JSON.stringify(this.color)})
         </script>
         </body>
         `

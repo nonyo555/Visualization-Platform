@@ -19,7 +19,8 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
       window.setInterval( async function(){
         let rdata = await httpGet(dataset)
         // let  mdata = mergeJson(data,JSON.parse(rdata))
-        data = data.concat(JSON.parse(rdata))
+        //data = data.concat(JSON.parse(rdata))
+        data = rdata
         render(data)
       }, delay)
     }
