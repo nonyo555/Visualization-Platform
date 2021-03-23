@@ -1,0 +1,5 @@
+column,typeCol,type
+column,xCol,xAxis
+column,valueCol,value
+column,labelCol,label
+column,yCol,yAxis

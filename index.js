@@ -24,6 +24,7 @@ const manageTemplate = require('./routes/manageTemplate')(io);
 const announcement = require('./routes/announcement')(io);
 
 const errorHandler = require('./helper/error-handler');
+const fs = require('fs');
 
 global.__basedir = __dirname;
 
@@ -58,7 +59,13 @@ app.get('/node', (req, res) => {
         message: 'Visualization Platform routes'
       })
 })
-
+/*
+app.post('/node', (req,res) => {
+  let img = req.files["file"];
+  fs.writeFileSync('public/image/' + img.name, img.data);
+  res.status(200).json({ "src" : 'http://localhost:8080/node/static/image/'+img.name});
+})
+*/
 var dir = path.join(__dirname, 'public');
 app.use('/node/static',express.static(dir));
 
