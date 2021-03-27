@@ -22,7 +22,7 @@ async function barChartRace(data, duration, n, barSize) {
         const keyframes = [];
         let ka, a, kb, b;
         for ([[ka, a], [kb, b]] of d3.pairs(datevalues)) {
-            for (let i = 0; i < k; ++i) {
+            for (let i = 0; i <= k; ++i) {
                 const t = i / k;
                 keyframes.push([
                     new Date(ka * (1 - t) + kb * t),
@@ -30,7 +30,7 @@ async function barChartRace(data, duration, n, barSize) {
                 ]);
             }
         }
-        keyframes.push([new Date(kb), rank(name => b.get(name) || 0)]);
+        //keyframes.push([new Date(ka), rank(name => a.get(name) || 0)]);
         return keyframes;
     }
 
@@ -166,6 +166,7 @@ async function barChartRace(data, duration, n, barSize) {
 
     //yield svg.node();
 
+    console.log(keyframes());
     for (const keyframe of keyframes()) {
         const transition = svg.transition()
             .duration(duration)
@@ -182,6 +183,7 @@ async function barChartRace(data, duration, n, barSize) {
         //invalidation.then(() => svg.interrupt());
         await transition.end();
     }
+
 
 }
 
