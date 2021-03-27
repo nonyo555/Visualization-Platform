@@ -61,16 +61,21 @@ class BarChartRace {
     generateHTML(){
         var dom = new JSDOM(`
                 <head>
+                    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
                     <script src="https://d3js.org/d3-color.v2.min.js"></script>
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.6.1/d3.min.js"></script>
                 </head>
                 <body>
-                    <div id=chart>
-                    </div>
-                <script>
-                `+barChartRace.barChartRace.toString()+`
-                var barChartRace = barChartRace(`+JSON.stringify(this.data)+`,`+this.duration+`,`+this.n+`,`+this.barSize+`)
-                </script>
+                    <button id="btn">replay</button>
+                    <div id="chart"></div>
+                    <script>
+                        `+barChartRace.barChartRace.toString()+`
+                        barChartRace(`+JSON.stringify(this.data)+`,`+this.duration+`,`+this.n+`,`+this.barSize+`)
+                        $("#btn").click(function() {
+                            $("div").empty();
+                            barChartRace(`+JSON.stringify(this.data)+`,`+this.duration+`,`+this.n+`,`+this.barSize+`)
+                          });
+                    </script>
                 </body>
                 </html>
         `)

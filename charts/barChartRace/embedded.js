@@ -1,5 +1,5 @@
 async function barChartRace(data, duration, n, barSize) {
-    var margin = ({top: 16, right: 6, bottom: 6, left: 0})
+    var margin = ({ top: 16, right: 6, bottom: 6, left: 0 })
     const names = new Set(data.map(d => d.name));
     var height = margin.top + barSize * n + margin.bottom;
     var width = 1.625 * height;
@@ -17,12 +17,12 @@ async function barChartRace(data, duration, n, barSize) {
         .map(([date, data]) => [(new Date(date)), data])
         .sort(([a], [b]) => d3.ascending(a, b))
 
-    let k = 10;    
+    let k = 10;
     var keyframes = () => {
         const keyframes = [];
         let ka, a, kb, b;
         for ([[ka, a], [kb, b]] of d3.pairs(datevalues)) {
-            for (let i = 0; i < k; ++i) {
+            for (let i = 0; i <= k; ++i) {
                 const t = i / k;
                 keyframes.push([
                     new Date(ka * (1 - t) + kb * t),
@@ -30,10 +30,10 @@ async function barChartRace(data, duration, n, barSize) {
                 ]);
             }
         }
-        keyframes.push([new Date(kb), rank(name => b.get(name) || 0)]);
+        //keyframes.push([new Date(ka), rank(name => a.get(name) || 0)]);
         return keyframes;
     }
-    
+
     var nameframes = d3.groups(keyframes().flatMap(([, data]) => data), d => d.name)
     var prev = new Map(nameframes.flatMap(([, data]) => d3.pairs(data, (a, b) => [JSON.stringify(b), a])))
     var next = new Map(nameframes.flatMap(([, data]) => d3.pairs(data, (a, b) => [JSON.stringify(a), b])))
@@ -103,7 +103,6 @@ async function barChartRace(data, duration, n, barSize) {
     }
 
     function textTween(a, b) {
-        console.log(a, b);
         const i = d3.interpolateNumber(a, b);
         return function (t) {
             this.textContent = formatNumber(i(t));
@@ -167,8 +166,8 @@ async function barChartRace(data, duration, n, barSize) {
 
     //yield svg.node();
 
-    while(1){
-        for (const keyframe of keyframes()) {
+    console.log(keyframes());
+    for (const keyframe of keyframes()) {
         const transition = svg.transition()
             .duration(duration)
             .ease(d3.easeLinear);
@@ -181,11 +180,11 @@ async function barChartRace(data, duration, n, barSize) {
         updateLabels(keyframe, transition);
         updateTicker(keyframe, transition);
 
-        ///invalidation.then(() => svg.interrupt());
+        //invalidation.then(() => svg.interrupt());
         await transition.end();
-        console.log("-------------")
-        }
     }
+
+
 }
 
 module.exports = { barChartRace }
