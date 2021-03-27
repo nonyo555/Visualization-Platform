@@ -102,7 +102,6 @@ function barChart(data, color, width, height) {
                     .selectAll(".tick")
                     .delay((d, i) => i * 20);
             }
-
         }
     });
 }
