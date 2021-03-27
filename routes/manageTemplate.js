@@ -137,7 +137,7 @@ module.exports = function () {
         }
     });
 
-    router.put('/', authorize(Role.designer), (req, res ,next) => {
+    router.put('/', authorize(Role.designer), async (req, res ,next) => {
         let uid = req.user.sub;
 
         let templateName = req.body.templateName;
@@ -157,11 +157,43 @@ module.exports = function () {
             res.status(400).json({ message: 'Error : Invalid file type' });
         }
 
-        templateService.updateTemplate(uid, templateName, description, img, classFile, embeddedFile, data, config).then((template_id) => {
-            createLog(req.user.role, req.user.sub, template_id, 'update');
-            res.status(200).send({
-                message: 'Updated template'
-            })
+        templateService.updateTemplate(uid, templateName, description, img, classFile, embeddedFile, data, config).then(async (template_id) => {
+            //generate example html file    
+            let parsed_data;
+            let parsed_config;
+
+            try {
+                if (data && config) {
+                    if (data.mimetype == 'text/csv' || data.mimetype == 'application/vnd.ms-excel') {
+                        parsed_data = vgenService.csvtojson(data.data.toString('utf-8'));
+                    }
+                    else if (data.mimetype == 'application/json') {
+                        parsed_data = JSON.parse(data.data);
+                    }
+                    if (config.mimetype == 'text/csv' || config.mimetype == 'application/vnd.ms-excel') {
+                        parsed_config = vgenService.csvConfig(config.data.toString());
+                    }
+                    else if (config.mimetype == 'application/json') {
+                        parsed_config = JSON.parse(config.data);
+                    }
+
+                    console.log(parsed_data);
+                    console.log(parsed_config);
+
+                    let visualization = await vgenService.Vgen(templateName.toLowerCase());
+                    await visualization.setAttr(parsed_data, parsed_config);
+                    let html = await visualization.generateHTML();
+                    fs.writeFileSync('public/example-' + templateName + '.html', html, (error) => { console.log(error) });
+
+                    createLog(req.user.role, req.user.sub, template_id, 'update');
+                    res.status(200).send({
+                        message: 'Updated template'
+                    })
+                }
+            } catch (err) {
+                console.log(err);
+                throw err;
+            }
         }).catch(next);
     });
 
