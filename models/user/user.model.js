@@ -4,7 +4,10 @@ module.exports = (sequelize, DataTypes) => {
         lastName: { type: DataTypes.STRING, allowNull: false },
         username: { type: DataTypes.STRING, allowNull: false },
         hash: { type: DataTypes.STRING, allowNull: false },
-        role: {type: DataTypes.ENUM('user','admin','superadmin','designer'), allowNull: false, defaultValue: 'user'}
+        email: { type: DataTypes.STRING, allowNull: false },
+        role: { type: DataTypes.ENUM('user','admin','superadmin','designer'), allowNull: false, defaultValue: 'user'},
+        resetPasswordToken: { type: DataTypes.STRING },
+        resetPasswordExpires: { type: DataTypes.DATE }
     };
 
     const options = {

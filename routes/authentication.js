@@ -10,6 +10,8 @@ const Role = require('../helper/role');
 module.exports = function () {
     router.post('/authenticate', authenticateSchema, authenticate);
     router.post('/register', registerSchema, register);
+    router.post('/forgot', forgotPassword);
+    router.post('/reset/:token', resetPassword);
     router.get('/', authorize([Role.superadmin, Role.admin]), getAll);
     router.get('/current',  authorize(), getCurrent);
     router.get('/:id',  authorize([Role.superadmin, Role.admin]), getById);
@@ -42,6 +44,7 @@ function registerSchema(req, res, next) {
         lastName: Joi.string().required(),
         username: Joi.string().required().alphanum().min(3).max(30),
         password: Joi.string().min(6).required(),
+        email: Joi.string().email().required()
     });
     validateRequest(req, next, schema);
 }
@@ -77,6 +80,7 @@ function updateSchema(req, res, next) {
         lastName: Joi.string().empty(''),
         username: Joi.string().empty(''),
         password: Joi.string().min(6).empty(''),
+        email: Joi.string().email().empty(''),
         role: Joi.string().valid('user','admin','designer')
     });
     validateRequest(req, next, schema);
@@ -98,6 +102,18 @@ function _delete(req, res, next) {
             res.json({ message: 'User deleted successfully' })
         })
         .catch(next);
+}
+
+function forgotPassword(req, res, next){
+    authService.forgotPassword(req.body.email).then((email) => {
+        res.status(200).json({ message: "An e-mail has been sent to " + email + " with further instructions." });
+    }).catch(next);
+}
+
+function resetPassword(req, res, next){
+    authService.resetPassword(req.params.token, req.body.password).then((user) => {
+        res.status(200).json(user)
+    }).catch(next);
 }
 
 function getAllLogs(req, res, next) {

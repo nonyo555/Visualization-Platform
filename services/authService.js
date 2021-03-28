@@ -1,16 +1,23 @@
-﻿﻿const config = require('../config/db.user.config.json');
-const jwt = require('jsonwebtoken');
+﻿﻿const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('../models/user/user.db');
-const user_usagedb = require('../models/user_usage/user_usage.db')
+const user_usagedb = require('../models/user_usage/user_usage.db');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+const mailconfig = require('../config/mail.server.config.json');
+const config = require('../config/db.user.config.json')
+const { Op } = require("sequelize");
 
 module.exports = {
     authenticate,
     getAll,
     getById,
+    getByEmail,
     create,
     update,
-    delete: _delete
+    delete: _delete,
+    forgotPassword,
+    resetPassword
 };
 
 async function authenticate({ username, password }) {
@@ -38,6 +45,10 @@ async function create(params) {
         throw 'Username "' + params.username + '" is already taken';
     }
 
+    if (await db.User.findOne({ where: { email: params.email } })) {
+        throw 'Email "' + params.email + '" is already in use';
+    }
+
     // hash password
     if (params.password) {
         params.hash = await bcrypt.hash(params.password, 10);
@@ -51,26 +62,30 @@ async function create(params) {
     createUser_usage(uid);
 }
 
-async function createUser_usage(uid){
+async function createUser_usage(uid) {
     await user_usagedb.user_usage.create({
-        uid : uid,
-        count : 0,
-        is_reachlimit : false
+        uid: uid,
+        count: 0,
+        is_reachlimit: false
     })
 }
 
-async function deleteUser_usage(uid){
-    await user_usagedb.user_usage.destroy({ where : { uid : uid }})
+async function deleteUser_usage(uid) {
+    await user_usagedb.user_usage.destroy({ where: { uid: uid } })
 }
 
 async function update(id, params, role) {
     const user = await getUser(id);
 
     //super admin can't be updated by other
-    if(user.role == 'superadmin' && role != 'superadmin')
+    if (user.role == 'superadmin' && role != 'superadmin')
         throw 'Cannot update super admin role';
 
     // validate
+    const emailChanged = params.email && user.email !== params.email;
+    if (emailChanged && await db.User.findOne({ where: { email: params.email } })) {
+        throw 'Email "' + params.email + '" is already in use';
+    }
     const usernameChanged = params.username && user.username !== params.username;
     if (usernameChanged && await db.User.findOne({ where: { username: params.username } })) {
         throw 'Username "' + params.username + '" is already taken';
@@ -92,11 +107,11 @@ async function _delete(id) {
     const user = await getUser(id);
 
     //super admin can't be deleted
-    if(user.role == "superadmin")
+    if (user.role == "superadmin")
         throw 'Cannot delete superadmin';
 
     await user.destroy();
-    
+
     deleteUser_usage(id)
 }
 
@@ -107,6 +122,88 @@ async function getUser(id) {
     if (!user) throw 'User not found';
     return user;
 }
+
+async function getByEmail(email) {
+    const user = db.User.findOne({
+        where: {
+            email: email
+        }
+    })
+    return user;
+}
+
+async function forgotPassword(email) {
+    const user = await getByEmail(email);
+    if (!user) {
+        throw "No account with that email address exits.";
+    }
+
+    try{
+        var token = await createResetToken();
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 3600000;
+
+        update(user.id, user, user.role).then(user => {
+            var transport = nodemailer.createTransport({
+                service: 'gmail',
+                secure: false,
+                auth: {
+                    user: mailconfig.EMAIL_USER,
+                    pass: mailconfig.EMAIL_PASS
+                },
+                tls: {
+                    rejectUnauthorized: false
+                }
+            });
+            var mailOptions = {
+                to: user.email,
+                from: mailconfig.EMAIL_USER,
+                subject: 'Visualization Platform password reset',
+                text: 'Hi ' + user.firstName + ', \n\n' +
+                    'We receive a request to reset your Visualization Platform account password through your email address.\n\n' +
+                    'username : ' + user.username + '\n\n' +
+                    'Please click the following link to complete the process. \n\n' +
+                    'http://localhost:4200/account/resetpassword/' + token + '\n\n\n' +
+                    'If you did not request this code, it is possible that someone else is trying to access your Visualization Platform account. Do not forward or give this link to anyone.\n\n\n' +
+                    'Sincerely yours,\n\n' +
+                    'The Visualization Platform team'
+            };
+            transport.sendMail(mailOptions, err => {
+                if(err) console.log(err);
+            });
+        });
+    } catch(err) {
+        throw err
+    }
+    return user.email;
+}
+
+async function resetPassword(token, password){
+    const user = await db.User.findOne({
+        where : {
+            resetPasswordToken: token,
+            resetPasswordExpires : { [Op.gt] : Date.now() }
+        }
+    });
+
+    if(!user){
+        throw "Password reset token is invalid or has expired.";
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    console.log(user.id, user , user.role);
+    update(user.id, user , user.role).then(user => {
+        console.log("---------updated" , user);
+    })
+    return user;
+}
+
+async function createResetToken() {
+    return crypto.randomBytes(20).toString("hex");
+  }
 
 function omitHash(user) {
     const { hash, ...userWithoutHash } = user;
