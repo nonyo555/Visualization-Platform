@@ -4,7 +4,6 @@ const preconfigdb = require("../models/preconfig/preconfig.db")
 const templatedb = require("../models/template/template.db");
 const template = templatedb.template
 const fs = require("fs");
-const { type } = require("os");
 
 //limit number of visualization generated / 1 user
 const limit = 20;
@@ -112,7 +111,7 @@ async function create(refId, uid, vname){
               refId: refId,
               data: fs.readFileSync(path),
               template: vname,
-              user_id: uid,
+              uid: uid,
               status: 'active',
               img: result.img
           }).then((file) => {
@@ -149,7 +148,7 @@ async function update(refId, uid, vname){
           {
             where: {
               refId : refId,
-              user_id : uid
+              uid : uid
             }
           })
 
@@ -168,14 +167,14 @@ async function updateActivate(refId,status,uid){
   },{
     where : {
       refId : refId,
-      user_id : uid
+      uid : uid
     }
   })
 
   var file = await filedb.file.findOne({
     where : {
       refId : refId,
-      user_id : uid
+      uid : uid
     }
   })
 
@@ -183,7 +182,7 @@ async function updateActivate(refId,status,uid){
 }
 
 async function updateUsage(uid) {
-  var files_count = await filedb.file.count({ where : { user_id : uid , status : 'active'}})
+  var files_count = await filedb.file.count({ where : { uid : uid , status : 'active'}})
 
     await user_usagedb.user_usage.update({
       count : files_count,
@@ -204,7 +203,6 @@ async function savePreconfig(file_id,vname,data,config,dataFileName,configFileNa
     //already have a preconfig for this file
     if(preconfig){
       let params = {
-        file_id : file_id, 
         vname: vname, 
         data: data, 
         config: config, 
@@ -235,7 +233,7 @@ async function getPreconfig(refId,uid){
   const file_id = await filedb.file.findOne({
     attributes : ['id'],
     where : {
-      user_id : uid,
+      uid : uid,
       refId : refId
     }
   })
@@ -254,7 +252,7 @@ async function getFiles(refId, uid){
   const result = await filedb.file.findOne({
       where : {
           refId : refId,
-          user_id : uid,
+          uid : uid,
           status: "active"
       }
   })
@@ -265,7 +263,7 @@ async function getAllRefId(uid){
   const result = await filedb.file.findAll({
       attributes : ['id','refId','template','img', 'status'],
       where : {
-          user_id : uid
+          uid: uid
       }
   })
   return result;
@@ -273,7 +271,7 @@ async function getAllRefId(uid){
 
 async function _delete(id,uid) {
   const file = await getFile(id);
-  if(file.user_id == uid){
+  if(file.uid == uid){
     await file.destroy();
     updateUsage(uid);
   }

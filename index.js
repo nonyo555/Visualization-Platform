@@ -14,7 +14,7 @@ const filedb = require('./models/file/file.db')
 const preconfigdb = require('./models/preconfig/preconfig.db')
 const templatedb = require('./models/template/template.db')
 const userdb = require('./models/user/user.db')
-const user_log = require('./models/user_log/user_log.db')
+const user_logdb = require('./models/user_log/user_log.db')
 const user_usage = require('./models/user_usage/user_usage.db')
 const announcementdb = require('./models/announcement/announcement.db')
 
@@ -27,20 +27,33 @@ const errorHandler = require('./helper/error-handler');
 
 global.__basedir = __dirname;
 
-admin_logdb.sequelize.sync()
-designer_logdb.sequelize.sync()
-filedb.sequelize.sync()
-preconfigdb .sequelize.sync()
-templatedb.sequelize.sync()
-userdb.sequelize.sync()
-user_log.sequelize.sync()
-user_usage.sequelize.sync()
-announcementdb.sequelize.sync()
+userdb.User.hasMany(admin_logdb.admin_log, { foreignKey: {name: 'uid', allowNull: false }});
+userdb.User.hasMany(designer_logdb.designer_log, { foreignKey: {name: 'uid', allowNull: false }});
+userdb.User.hasMany(user_logdb.user_log, { foreignKey: {name: 'uid', allowNull: false }});
+userdb.User.hasMany(announcementdb.announcement, { foreignKey: {name : 'uid', allowNull: false }});
+userdb.User.hasMany(filedb.file, { foreignKey: {name: 'uid', allowNull: false }});
+userdb.User.hasMany(templatedb.template, { foreignKey: {name: 'uid', allowNull: false }});
+userdb.User.hasOne(user_usage.user_usage, { foreignKey: {name: 'uid', allowNull: false }});
+filedb.file.hasOne(preconfigdb.preconfig, { foreignKey: {name : 'file_id', allowNull: false }});
+
+async function sync_databases() {
+  await userdb.sequelize.sync()
+  await filedb.sequelize.sync()
+  await templatedb.sequelize.sync()
+  await preconfigdb .sequelize.sync()
+  await announcementdb.sequelize.sync()
+  await user_usage.sequelize.sync()
+  await admin_logdb.sequelize.sync()
+  await designer_logdb.sequelize.sync()
+  await user_logdb.sequelize.sync()
+}
+
 
 //force drop and resync table
  /*db.sequelize.sync({ force: true }).then(() => {
    console.log("Drop and re-sync db.");
  });*/
+sync_databases();
 
 app.use(fileUpload({
     createParentPath: true

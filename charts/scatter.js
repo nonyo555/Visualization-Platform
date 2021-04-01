@@ -2,7 +2,6 @@ var fs = require('fs');
 var vgenService = require('../services/vgenService')
 const generate = async (config) => {
     if(config != null){
-        console.log(config);
         var res = `<!-- Code from d3-graph-gallery.com -->
         <!DOCTYPE html>
         <meta charset="utf-8">

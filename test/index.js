@@ -187,7 +187,7 @@ app.post('/barChartRace', async (req, res, next) => {
   }
 });
 
-app.listen(80, () => {
+app.listen(8080, () => {
   //console.log(Vgen.Vgen.createSunburst().genConfig('del','abc',{'name2':'Aunaun'}))
   console.log('Start server at port 80.')
 })

@@ -197,7 +197,7 @@ async function resetPassword(token, password){
 
     console.log(user.id, user , user.role);
     update(user.id, user , user.role).then(user => {
-        console.log("---------updated" , user);
+        console.log(user);
     })
     return user;
 }

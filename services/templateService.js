@@ -1,6 +1,7 @@
 const fs = require('fs');
 const templatedb = require("../models/template/template.db");
 const template = templatedb.template;
+const filedb = require("../models/file/file.db");
 const rimraf = require("rimraf");
 
 module.exports = {
@@ -41,6 +42,7 @@ async function deleteTemplate(id, uid) {
 
 async function updateTemplate(uid, templateName, description, img, classFile, embeddedFile, data, config) {
     const result = await template.findOne({ where: { 'TemplateName': templateName } })
+    const old_img = result.img;
     if (result.uid == uid) {
         if (img) {
             await template.update({
@@ -57,6 +59,15 @@ async function updateTemplate(uid, templateName, description, img, classFile, em
                     }
                 });
             fs.writeFileSync('public/' + img.name, img.data);
+
+            await filedb.file.update({ 
+                'img': img.name 
+            },
+                {
+                   where: {
+                        img: old_img
+                    } 
+                })
         }
         else {
             await template.update({

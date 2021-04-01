@@ -1,6 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
     const attributes = {
-        uid: { type: DataTypes.INTEGER, allowNull: false },
         TemplateName: { type: DataTypes.STRING, allowNull: false },
         description: { type: DataTypes.BLOB("long"), allowNull: false },
         img: { type: DataTypes.STRING, allowNull: false },

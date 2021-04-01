@@ -81,13 +81,13 @@ async function create(role, uid, target_id, method, target){
             target: target
         })
         break;
-        case 'designer' : await designer_logdb.designer_log.create({
+        case 'designer' : 
+        await designer_logdb.designer_log.create({
             uid : uid,
             role: role,
             method : method,
             target_id : target_id,
             target : target
-            
         })
         break;
         case 'superadmin' : 

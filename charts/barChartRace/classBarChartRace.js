@@ -32,7 +32,6 @@ class BarChartRace {
 
     setAttr(data,config){
         var keys = Object.keys(config)
-        //if (key.includes = )
         if (keys.includes('duration')){
             this.setDuration(config.duration)
         }

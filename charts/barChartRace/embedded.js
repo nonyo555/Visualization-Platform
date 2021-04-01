@@ -165,8 +165,6 @@ async function barChartRace(data, duration, n, barSize) {
     const updateTicker = ticker(svg);
 
     //yield svg.node();
-
-    console.log(keyframes());
     for (const keyframe of keyframes()) {
         const transition = svg.transition()
             .duration(duration)
@@ -183,7 +181,6 @@ async function barChartRace(data, duration, n, barSize) {
         //invalidation.then(() => svg.interrupt());
         await transition.end();
     }
-
 
 }
 
