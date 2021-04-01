@@ -73,7 +73,7 @@ module.exports = function () {
                         vgenService.create(refId, req.user.sub, vname).then(file_id => {
                             if(file_id){
                                 //create log
-                                createLog(req.user.role, req.user.sub, file_id, 'create');
+                                createLog(req.user.role, req.user.sub, file_id, 'CREATE', 'file');
                                 //save pre-generate config
                                 vgenService.savePreconfig(file_id, vname, dataFile.data, configFile.data, dataFile.name.toString(), configFile.name.toString()).then(() => {
                                     res.status(200).json({ refId: refId, visualization_name: vname })
@@ -108,7 +108,7 @@ module.exports = function () {
 
         vgenService.getFiles(refId, uid).then((resfile) => {
             if (resfile) {
-                logService.create(req.user.role, req.user.sub, resfile.dataValues.id, 'get')
+                logService.create(req.user.role, req.user.sub, resfile.dataValues.id, 'GET', 'file')
                 res.status(200).send(resfile.data.toString('utf8'))
             }
             else res.status(401).json({ message: 'Unauthorized' });
@@ -124,7 +124,7 @@ module.exports = function () {
 
         vgenService.getFiles(refId, uid).then((resfile) => {
             if (resfile) {
-                logService.create(req.user.role, req.user.sub, resfile.dataValues.id, 'get')
+                logService.create(req.user.role, req.user.sub, resfile.dataValues.id, 'GET', 'file')
                 res.send(resfile.data.toString('utf8'))
             }
             else res.status(401).json({ message: 'Unauthorized' });
@@ -196,7 +196,7 @@ module.exports = function () {
                         vgenService.update(refId, req.user.sub, vname).then(file_id => {
                             if(file_id){
                                 //create log
-                                createLog(req.user.role, req.user.sub, file_id, 'update');
+                                createLog(req.user.role, req.user.sub, file_id, 'UPDATE', 'file');
                                 //save pre-generate config
                                 vgenService.savePreconfig(file_id, vname, dataFile.data, configFile.data, dataFile.name.toString(), configFile.name.toString()).then(() => {
                                     res.status(200).json({ refId: refId, visualization_name: vname })
@@ -218,8 +218,9 @@ module.exports = function () {
         var uid = req.user.sub;
 
         vgenService.updateActivate(refId,status,uid).then((result)=>{
-            console.log(result);
-            createLog(req.user.role, req.user.sub, result.id, 'update');
+            if(req.user.role == 'user'){
+                createLog(req.user.role, req.user.sub, result.id, 'UPDATE', 'file');
+            }
             res.status(200).json({ message : 'File Update successfully'});
         }).catch(next);
     })
@@ -228,7 +229,7 @@ module.exports = function () {
         let file_id = req.params.id;
         let uid = req.user.sub;
         vgenService.delete(file_id, uid).then(() => {
-            createLog(req.user.role, req.user.sub, file_id, 'delete');
+            createLog(req.user.role, req.user.sub, file_id, 'DELETE', 'file');
             res.status(200).json({ message: 'File deleted successfully' })
         }).catch(next)
     })
@@ -252,7 +253,7 @@ module.exports = function () {
     return router;
 }
 
-function createLog(role, uid, target, method) {
-    logService.create(role, uid, target, method)
+function createLog(role, uid, target_id, method, target) {
+    logService.create(role, uid, target_id, method, target)
         .then((result) => console.log(result));
 }

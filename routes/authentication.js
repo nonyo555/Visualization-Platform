@@ -89,7 +89,7 @@ function updateSchema(req, res, next) {
 function update(req, res, next) {
     authService.update(req.params.id, req.body, req.user.role)
         .then(user => {
-            createLog(req.user.role, req.user.sub, req.params.id, 'update');
+            createLog(req.user.role, req.user.sub, req.params.id, 'UPDATE', user.role);
             res.json(user)
         })
         .catch(next);
@@ -97,21 +97,24 @@ function update(req, res, next) {
 
 function _delete(req, res, next) {
     authService.delete(req.params.id)
-        .then(() => {
-            createLog(req.user.role, req.user.sub, req.params.id, 'delete');
+        .then((role) => {
+            createLog(req.user.role, req.user.sub, req.params.id, 'DELETE', role);
             res.json({ message: 'User deleted successfully' })
         })
         .catch(next);
 }
 
 function forgotPassword(req, res, next){
-    authService.forgotPassword(req.body.email).then((email) => {
-        res.status(200).json({ message: "An e-mail has been sent to " + email + " with further instructions." });
+    console.log(req.user);
+    authService.forgotPassword(req.body.email).then((user) => {
+        createLog(user.role, user.id, user.id, 'FORGOT_PASSWORD', user.role)
+        res.status(200).json({ message: "An e-mail has been sent to " + user.email + " with further instructions." });
     }).catch(next);
 }
 
 function resetPassword(req, res, next){
     authService.resetPassword(req.params.token, req.body.password).then((user) => {
+        createLog(user.role, user.id, user.id, 'RESET_PASSWORD', user.role)
         res.status(200).json(user)
     }).catch(next);
 }
@@ -136,8 +139,8 @@ function getLogById(req, res, next){
     }).catch(next);
 }
 
-function createLog(role,uid,target,method) {
-    logService.create(role, uid, target, method)
+function createLog(role,uid,target_id,method,target) {
+    logService.create(role, uid, target_id, method, target)
         .then((result) => console.log(result));
 }
 

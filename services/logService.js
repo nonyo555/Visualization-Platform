@@ -63,38 +63,42 @@ async function getUser(id){
     return user;
 }
 
-async function create(role, user, target, method){
-    var tmp = "";
+async function create(role, uid, target_id, method, target){
     switch(role){
         case 'user' : await user_logdb.user_log.create({
-            uid : user,
-            file_id : target,
-            method : method
+            uid : uid,
+            role: role,
+            method : method,
+            target_id : target_id,
+            target: target
         })
-        tmp = "file";
         break;
         case 'admin' : await admin_logdb.admin_log.create({
-            uid : user,
-            user : target,
-            method : method
+            uid : uid,
+            role: role,
+            method : method,
+            target_id : target_id,
+            target: target
         })
-        tmp="user";
         break;
         case 'designer' : await designer_logdb.designer_log.create({
-            uid : user,
-            template_id : target,
-            method : method
+            uid : uid,
+            role: role,
+            method : method,
+            target_id : target_id,
+            target : target
+            
         })
-        tmp = "template";
         break;
-        case 'superadmin' : console.log("do here");
+        case 'superadmin' : 
             await admin_logdb.admin_log.create({
-            uid : user,
-            user : target,
-            method : method
+            uid : uid,
+            role: role,
+            method : method,
+            target_id : target_id,
+            target: target
         })
-        tmp = "user/admin/designer"
         break;
     }
-    return role + ': ' + user + ' has ' + method + ' ' + tmp + ': ' + target;
+    return role + ': ' + uid + ' has ' + method + ' ' + target + ': ' + target_id;
 }

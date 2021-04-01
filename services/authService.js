@@ -105,7 +105,7 @@ async function update(id, params, role) {
 
 async function _delete(id) {
     const user = await getUser(id);
-
+    let role = user.role;
     //super admin can't be deleted
     if (user.role == "superadmin")
         throw 'Cannot delete superadmin';
@@ -113,6 +113,7 @@ async function _delete(id) {
     await user.destroy();
 
     deleteUser_usage(id)
+    return role;
 }
 
 // helper functions
@@ -175,7 +176,7 @@ async function forgotPassword(email) {
     } catch(err) {
         throw err
     }
-    return user.email;
+    return user;
 }
 
 async function resetPassword(token, password){

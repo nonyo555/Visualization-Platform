@@ -1,4 +1,3 @@
-const fs = require('fs');
 const announcementdb = require("../models/announcement/announcement.db");
 const announcement = announcementdb.announcement;
 
@@ -12,18 +11,20 @@ module.exports = {
 }
 
 async function create(uid, title, message) {
+    var result = null;
     if (!await announcement.findOne({ where: { title: title} })) {
         await announcement.create({
             'uid': uid,
             'title': title,
             'message': message,
         }).then((ann) => {
-            return ann.id;
+            result = ann;
         })
     }
     else {
         throw "Duplicated announcement title, Please use other title."
     }
+    return result;
 }
 
 async function update(id, uid, title, message) {

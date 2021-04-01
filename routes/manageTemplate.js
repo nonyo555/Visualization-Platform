@@ -112,7 +112,7 @@ module.exports = function () {
                             let html = await visualization.generateHTML();
                             fs.writeFileSync('public/example-' + templateName + '.html', html, (error) => { console.log(error) });
 
-                            createLog(req.user.role, req.user.sub, template_id, 'create')
+                            createLog(req.user.role, req.user.sub, template_id, 'CREATE', 'template')
 
                             res.status(200).json({
                                 status: 'success',
@@ -185,7 +185,7 @@ module.exports = function () {
                     let html = await visualization.generateHTML();
                     fs.writeFileSync('public/example-' + templateName + '.html', html, (error) => { console.log(error) });
 
-                    createLog(req.user.role, req.user.sub, template_id, 'update');
+                    createLog(req.user.role, req.user.sub, template_id, 'UPDATE', 'template');
                     res.status(200).send({
                         message: 'Updated template'
                     })
@@ -203,7 +203,7 @@ module.exports = function () {
         var uid = req.user.sub;
 
         templateService.updateActivate(id,status,uid).then((result)=>{
-            createLog(req.user.role, req.user.sub, result.id, 'update');
+            createLog(req.user.role, req.user.sub, result.id, 'UPDATE', 'template');
             res.status(200).json({ message : 'Template Update successfully'});
         }).catch(next);
     })
@@ -212,7 +212,7 @@ module.exports = function () {
         let id = req.params.id;
         let uid = req.user.sub;
         templateService.deleteTemplate(id, uid).then((template_id) => {
-            createLog(req.user.role, req.user.sub, template_id, 'delete');
+            createLog(req.user.role, req.user.sub, template_id, 'DELETE', 'template');
             res.status(200).send({
                 message: 'Deleted template successfully'
             })
@@ -222,7 +222,7 @@ module.exports = function () {
     return router
 }
 
-function createLog(role, uid, target, method) {
-    logService.create(role, uid, target, method)
+function createLog(role, uid, target_id, method, target) {
+    logService.create(role, uid, target_id, method, target)
         .then((result) => console.log(result));
 }

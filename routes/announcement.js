@@ -3,6 +3,7 @@ const Role = require('../helper/role')
 const express = require('express');
 const router = express.Router();
 const announcementService = require('../services/announcementService')
+const logService = require('../services/logService')
 
 module.exports = function () {
     router.get('/', (req, res) => {
@@ -36,6 +37,7 @@ module.exports = function () {
         let message = req.body.message
         if(title!="" && message!=""){
             announcementService.create(uid, title, message).then((result) => {
+                createLog(req.user.role, req.user.sub, result.id, 'CREATE', 'announcement');
                 res.status(200).json(result);
             }).catch(next);
         } else {
@@ -52,6 +54,7 @@ module.exports = function () {
 
         if(title!="" && message!=""){
         announcementService.update(id, uid, title, message).then((result) => {
+            createLog(req.user.role, req.user.sub, result.id, 'UPDATE', 'announcement');
             res.status(200).json(result)
         }).catch(next);
         } else {
@@ -62,7 +65,8 @@ module.exports = function () {
     router.delete('/:id', authorize(Role.designer), (req, res, next) => {
         let id = req.params.id;
         let uid = req.user.sub;
-        announcementService.delete(id, uid).then((template_id) => {
+        announcementService.delete(id, uid).then((id) => {
+            createLog(req.user.role, req.user.sub, id, 'DELETE', 'announcement');
             res.status(200).json({
                 message: 'Deleted announcement successfully'
             })
@@ -70,5 +74,10 @@ module.exports = function () {
     });
 
     return router
+}
+
+function createLog(role, uid, target_id, method, target) {
+    logService.create(role, uid, target_id, method, target)
+        .then((result) => console.log(result));
 }
 
