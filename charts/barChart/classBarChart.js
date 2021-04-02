@@ -11,12 +11,17 @@ class BarChart {
     }
     setWidth(width) {
         if (typeof width === 'number'){
-        this.width = width
+            this.width = width;
         }
     }
     setHeight(height) {
         if (typeof height === 'number'){
-        this.height = height
+            this.height = height;
+        }
+    }
+    setColor(color){
+        if(typeof color == 'string'){
+            this.color = color;
         }
     }
     setData(data){
@@ -29,6 +34,9 @@ class BarChart {
         if (keys.includes('width') && keys.includes('height') ){
             this.setWidth(config.width)
             this.setHeight(config.height)
+        }
+        if(keys.includes('color')){
+            this.setColor(config.color);
         }
         //this.setLabel(config.templatelabel)
         this.setData(data);

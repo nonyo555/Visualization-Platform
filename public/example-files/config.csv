@@ -1,0 +1,4 @@
+column,xLabel,x
+column,yLabel,y
+column,typeLabel,index
+column,timeMode,TRUE
