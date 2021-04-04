@@ -32,8 +32,8 @@ module.exports = function () {
         templateService.getById(id).then((result) => {
             let class_file = fs.readFileSync(result.class_path.substr(3));
             let embedded_file = fs.readFileSync(result.embedded_path.substr(3));
-            let data_file = fs.readFileSync('public/example-files/' + result.templateName + '/' + result.data);
-            let config_file = fs.readFileSync('public/example-files/' + result.templateName + '/' + result.config);
+            let data_file = fs.readFileSync('public/example-files/' + result.TemplateName + '/' + result.data);
+            let config_file = fs.readFileSync('public/example-files/' + result.TemplateName + '/' + result.config);
             res.status(200).json({
                 id: result.id,
                 uid: result.uid,
