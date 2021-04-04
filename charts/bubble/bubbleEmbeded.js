@@ -246,6 +246,8 @@ function render(selected){
     d3.select('.gCircle').selectAll("circle")    
     .append('title')
         .text(titleText)
+        
+    d3.selectAll('g').selectAll('#legend').attr("opacity", "0.8")
 }
 
 }

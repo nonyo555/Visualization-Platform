@@ -293,6 +293,7 @@ async function Vgen(templateName){
         }
     })
     if (result != null){
+      clearCache(result.embedded_path);
       var objectClass = require(result.class_path).object()
       return objectClass
       }
@@ -301,3 +302,6 @@ async function Vgen(templateName){
       }
 }
 
+function clearCache(module) {
+  delete require.cache[require.resolve(module)];
+}

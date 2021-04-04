@@ -18,15 +18,16 @@ async function deleteTemplate(id, uid) {
     const result = await getById(id)
     if (result.uid == uid){
         const dir = 'charts/' + result.TemplateName;
-        const img_path = 'public/'+ result.img;
-        const data_path = 'public/example-files/'+ result.data;
-        const config_path = 'public/example-files/'+ result.config;
+        const img_dir = 'public/' + result.TemplateName;
+        const file_dir = 'public/example-files/'+ result.TemplateName;
 
         try {
-            rimraf.sync(dir);
-            fs.unlinkSync(img_path);
-            fs.unlinkSync(data_path);
-            fs.unlinkSync(config_path);
+            if(fs.existsSync(dir))
+                rimraf.sync(dir);
+            if(fs.existsSync(img_dir))
+                rimraf.sync(img_dir);
+            if(fs.existsSync(file_dir))
+                rimraf.sync(file_dir);
         } catch(err) {
             console.error(err);
             throw err;
@@ -58,7 +59,7 @@ async function updateTemplate(uid, templateName, description, img, classFile, em
                         TemplateName: templateName ,
                     }
                 });
-            fs.writeFileSync('public/' + img.name, img.data);
+            fs.writeFileSync('public/'+ templateName + '/' + img.name, img.data);
 
             await filedb.file.update({ 
                 'img': img.name 
@@ -83,8 +84,8 @@ async function updateTemplate(uid, templateName, description, img, classFile, em
         }
         fs.writeFileSync('charts/' + templateName + '/' + classFile.name, classFile.data);
         fs.writeFileSync('charts/' + templateName + '/' + embeddedFile.name, embeddedFile.data);
-        fs.writeFileSync('public/example-files/' + data.name, data.data);
-        fs.writeFileSync('public/example-files/' + config.name, config.data);
+        fs.writeFileSync('public/example-files/' + templateName + '/' + data.name, data.data);
+        fs.writeFileSync('public/example-files/' + templateName + '/' + config.name, config.data);
     } else throw "Unauthorized"
 
     return result.id;
@@ -131,12 +132,18 @@ async function addTemplate(uid, templateName, description, img, classFile, embed
         if (!fs.existsSync('charts/' + templateName)) {
             fs.mkdirSync('charts/' + templateName)
         }
+        if (!fs.existsSync('public/' + templateName)) {
+            fs.mkdirSync('public/' + templateName)
+        }
+        if (!fs.existsSync('public/example-files/' + templateName)) {
+            fs.mkdirSync('public/example-files/' + templateName)
+        }
 
         fs.writeFileSync('charts/' + templateName + '/' + classFile.name, classFile.data);
         fs.writeFileSync('charts/' + templateName + '/' + embeddedFile.name, embeddedFile.data);
-        fs.writeFileSync('public/' + img.name, img.data);
-        fs.writeFileSync('public/example-files/' + data.name, data.data);
-        fs.writeFileSync('public/example-files/' + config.name, config.data);
+        fs.writeFileSync('public/' + templateName + '/' +  img.name, img.data);
+        fs.writeFileSync('public/example-files/' + templateName + '/' + data.name, data.data);
+        fs.writeFileSync('public/example-files/' + templateName + '/' + config.name, config.data);
 
         return template_id;
     }

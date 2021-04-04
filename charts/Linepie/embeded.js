@@ -193,7 +193,7 @@ function  linepie(label,linedataset,piedataset,width,height,percenMode= 'false')
       },
       options:  {
         title: {
-          text: 'fill: ' + 'start',
+          text: "",//'fill: ' + 'start',
           display: true
                   },
                   legend:{

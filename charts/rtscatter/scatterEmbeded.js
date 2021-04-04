@@ -353,8 +353,10 @@ function scatter(screenWidth,screenHeight,color ,tooltip,delay,dataset,timemode,
       else if(event.deltaY == 100){
       curX =  x.domain()
       curY = y.domain()
-      let lengthX =(curX[1]-curX[0])*5/100 |0
-      let lengthY =(curY[1]-curY[0])*5/100 |0
+      let maxMinX =d3.extent(data, d => d[labelConfig.x])
+      let maxminY =d3.extent(data, d => d[labelConfig.y])
+      let lengthX =(maxMinX[1]-maxMinX[0])*5/100 |0
+      let lengthY =(maxminY[1]-maxminY[0])*5/100 |0
       x.domain([curX[0]-lengthX, curX[1]+lengthX]);
       y.domain([curY[0]-lengthY, curY[1]+lengthY]);
       zoom()

@@ -105,7 +105,6 @@ function _delete(req, res, next) {
 }
 
 function forgotPassword(req, res, next){
-    console.log(req.user);
     authService.forgotPassword(req.body.email).then((user) => {
         createLog(user.role, user.id, user.id, 'FORGOT_PASSWORD', user.role)
         res.status(200).json({ message: "An e-mail has been sent to " + user.email + " with further instructions." });
